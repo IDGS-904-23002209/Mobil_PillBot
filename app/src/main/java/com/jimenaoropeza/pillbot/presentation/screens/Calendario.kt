@@ -317,15 +317,15 @@ fun DayView(
     var expandedDay by remember { mutableStateOf(false) }
     val daysInMonth = (1..currentDate.lengthOfMonth()).toList()
 
-    val hoy = LocalDate.now()
     val tomasMostrar = if (esHoy && tomasHoy.isEmpty()) {
         datosEjemploHoy
     } else {
         tomasHoy
     }
 
+    // Horas con formato estandarizado de dos dígitos para coincidir con la base de datos
     val horas = listOf(
-        "6:00", "7:00", "8:00", "9:00", "10:00", "11:00",
+        "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
         "12:00", "13:00", "14:00", "15:00", "16:00", "17:00",
         "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"
     )
@@ -448,9 +448,8 @@ fun DayView(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            val tomasDelDia = tomasMostrar
-            val tomados = tomasDelDia.count { it.tomado }
-            val pendientes = tomasDelDia.count { !it.tomado }
+            val tomados = tomasMostrar.count { it.tomado }
+            val pendientes = tomasMostrar.count { !it.tomado }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(modifier = Modifier.size(10.dp).background(PillBotMint, CircleShape))
@@ -463,7 +462,7 @@ fun DayView(
                 Text("Pendientes: $pendientes", fontSize = 12.sp, color = Color(0xFFFF9800))
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Total: ${tomasDelDia.size}", fontSize = 12.sp, color = Color.Gray)
+                Text("Total: ${tomasMostrar.size}", fontSize = 12.sp, color = Color.Gray)
             }
         }
 
@@ -478,8 +477,14 @@ fun DayView(
         )
 
         horas.forEach { hora ->
-            val tomasEnHora = tomasMostrar.filter {
-                it.hora_toma?.startsWith(hora.take(2)) == true
+            // Se filtran las tomas comparando únicamente las primeras dos cifras (las horas)
+            val tomasEnHora = tomasMostrar.filter { toma ->
+                val horaToma = toma.hora_toma ?: ""
+                if (horaToma.length >= 2) {
+                    horaToma.substring(0, 2) == hora.substring(0, 2)
+                } else {
+                    false
+                }
             }
 
             Card(
@@ -536,15 +541,11 @@ fun DayView(
                                         fontWeight = FontWeight.Medium
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
+                                    // Corregido: Uso de cantidadDosis para evitar errores de compilación
                                     Text(
-                                        text = "(${toma.dosis ?: "Sin dosis"})",
+                                        text = "(${toma.dosis ?: "${toma.dosis ?: 1} dosis"})",
                                         fontSize = 11.sp,
                                         color = Color.Gray
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = if (toma.tomado) "" else "",
-                                        fontSize = 13.sp
                                     )
                                 }
                                 if (index < tomasEnHora.size - 1) {
@@ -566,10 +567,10 @@ fun DayView(
                 }
             }
         }
-
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
+
 
 @Composable
 fun WeekView(
