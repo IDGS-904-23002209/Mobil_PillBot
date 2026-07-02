@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import android.util.Log
+import com.jimenaoropeza.pillbot.modelo.CatalogoMedicamentoRequest
 
 class MedicamentoViewModel : ViewModel() {
 
@@ -75,4 +76,49 @@ class MedicamentoViewModel : ViewModel() {
             }
         }
     }
+
+    fun registrarMedicamentoCatalogo(
+        request: CatalogoMedicamentoRequest,
+        onResult: (Boolean, String) -> Unit
+    ) {
+        viewModelScope.launch {
+
+            try {
+
+                val respuesta = repository.registrarMedicamentoCatalogo(request)
+
+                if (respuesta.isSuccessful) {
+
+                    registroExitoso.value = true
+
+                    onResult(
+                        true,
+                        respuesta.body()?.mensaje ?: "Medicamento registrado correctamente."
+                    )
+
+                } else {
+
+                    registroExitoso.value = false
+
+                    onResult(
+                        false,
+                        "Error del servidor: ${respuesta.code()}"
+                    )
+
+                }
+
+            } catch (e: Exception) {
+
+                registroExitoso.value = false
+
+                onResult(
+                    false,
+                    e.message ?: "Error desconocido"
+                )
+
+            }
+
+        }
+    }
+
 }

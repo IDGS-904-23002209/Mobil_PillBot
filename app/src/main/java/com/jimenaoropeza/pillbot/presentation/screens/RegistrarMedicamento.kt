@@ -204,8 +204,12 @@ fun FormularioMedicamento(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = { onNavTabClick("formularioManual") },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF59CBA2))
+                    onClick = {
+                        onNavTabClick("agregarMedicamento")
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF59CBA2)
+                    )
                 ) {
                     Text(text = "ABRIR FORMULARIO", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 }

@@ -1,0 +1,1 @@
+sdk.dir=C\:\\Users\\Yamilet\\AppData\\Local\\Android\\Sdk
