@@ -30,13 +30,14 @@ import com.jimenaoropeza.pillbot.viewmodel.AuthViewModel
 import com.jimenaoropeza.pillbot.ui.theme.BlueSky
 import com.jimenaoropeza.pillbot.ui.theme.GrayLight
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Login(
-    viewModel: AuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel(), // <-- Agregamos el ViewModel aquí
+    viewModel: AuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     onForgotPasswordClick: () -> Unit,
-    onLoginSuccessClick: (String) -> Unit,
-    onRegisterClick: () -> Unit,
+    onLoginSuccess: (Int) -> Unit, // <-- Corregido para coincidir con tu NavController
+    onRegisterClick: () -> Unit
 ) {
     var usernameOrEmail by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -168,9 +169,7 @@ fun Login(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp, bottom = 24.dp)
-                    .clickable {
-                        onForgotPasswordClick() // 2. Lo ejecutas aquí al hacer clic
-                    }
+                    .clickable { onForgotPasswordClick() }
             )
 
             if (viewModel.isLoading) {
@@ -184,8 +183,10 @@ fun Login(
             Button(
                 onClick = {
                     if (usernameOrEmail.isNotEmpty() && password.isNotEmpty()) {
-                        viewModel.iniciarSesion(usernameOrEmail, password) { nombreRecibido ->
-                            onLoginSuccessClick(nombreRecibido.toString()) // <-- Pasamos el nombre al cambiar de pantalla
+                        viewModel.iniciarSesion(usernameOrEmail, password) { idRecibido ->
+                            // Convertimos de forma segura a Int por si viene como String u otro objeto
+                            val userId = idRecibido.toString().toIntOrNull() ?: 5
+                            onLoginSuccess(userId)
                         }
                     }
                 },

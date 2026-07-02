@@ -13,30 +13,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jimenaoropeza.pillbot.R
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jimenaoropeza.pillbot.modelo.TomaHoy
-import com.jimenaoropeza.pillbot.viewmodel.TomaHoyViewModel
+import com.jimenaoropeza.pillbot.presentation.viewmodel.TomaHoyViewModel
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Inicio(
-    currentScreen: String,
-    totalNoLeidas: Int,
-    onNavTabClick: (String) -> Unit,
+    usuarioId: Int,                       // <-- Sincronizado con NavController
+    currentScreen: String = "inicio",     // <-- Agregado para cumplir los requisitos de firma del Nav
+    onNavTabClick: (String) -> Unit = {}, // <-- Agregado para cumplir los requisitos de firma del Nav
+    onIrANotificaciones: () -> Unit,       // <-- Sincronizado con NavController
+    onIrACalendario: () -> Unit,           // <-- Sincronizado con NavController
     viewModel: TomaHoyViewModel = viewModel(),
-    usuarioId: Int, // Recibe el ID de usuario dinámico desde MainActivity
-    nombreUsuario: String
+    nombreUsuario: String = "Usuario"      // Por seguridad tiene un valor por defecto
 ) {
-    val tomasHoy = viewModel.tomasHoy.value
+    // Escucha el estado reactivo del ViewModel de manera correcta
+    val tomasHoy by viewModel.tomasHoy
 
-    // Lanza la petición usando el ID del usuario autenticado dinámicamente
+    // Carga los datos usando el ID del usuario autenticado dinámicamente
     LaunchedEffect(usuarioId) {
         viewModel.cargarTomasHoy(usuarioId = usuarioId)
     }
@@ -51,164 +53,100 @@ fun Inicio(
     val formateador = DateTimeFormatter.ofPattern("dd - MMM - yyyy", Locale("es", "MX"))
     val fechaFormateada = hoy.format(formateador)
 
-    Scaffold(
-        bottomBar = {
-            NavigationBar(
-                containerColor = Color(0xFFF1F1F1),
-                tonalElevation = 4.dp
-            ) {
-                val navIcons = listOf(
-                    R.drawable.ic_inicio,
-                    R.drawable.ic_formulario,
-                    R.drawable.ic_notificacion,
-                    R.drawable.ic_inventario,
-                    R.drawable.ic_calendario,
-                    R.drawable.ic_emergencia,
-                    R.drawable.ic_perfil
-                )
-                val routes = listOf("inicio", "formulario", "notificaciones", "inventario", "calendario", "controlEmergencia", "perfil")
-                navIcons.forEachIndexed { index, iconRes ->
-                    val isSelected = currentScreen == routes[index]
+    // Eliminamos Scaffold e insertamos directamente la vista con scroll dinámico
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Un espacio pequeño desde el header común de "PILLBOT"
+        Spacer(modifier = Modifier.height(12.dp))
 
-                    NavigationBarItem(
-                        selected = isSelected,
-                        onClick = { onNavTabClick(routes[index]) },
-                        icon = {
-                            Box(modifier = Modifier.wrapContentSize()) {
-                                Image(
-                                    painter = painterResource(id = iconRes),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(32.dp)
-                                )
-                                if (index == 2 && totalNoLeidas > 0) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(16.dp)
-                                            .background(Color.Red, shape = RoundedCornerShape(8.dp))
-                                            .align(Alignment.TopEnd),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = totalNoLeidas.toString(),
-                                            color = Color.White,
-                                            fontSize = 9.sp,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-                                }
-                            }
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            indicatorColor = if (isSelected) Color(0xFF59CBA2).copy(alpha = 0.3f) else Color.Transparent
-                        )
-                    )
-                }
-            }
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Text(
+            text = "Bienvenido, $nombreUsuario",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1D2A44)
+        )
+
+        Text(
+            text = if (tomasPendientes > 0) "Tienes medicamentos pendientes por tomar" else "No tienes medicamentos pendientes",
+            color = Color.Gray,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Text(
+            text = "Hoy, $fechaFormateada",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color.Black,
+            modifier = Modifier.align(Alignment.Start)
+        )
+        Text(
+            text = "$tomasPendientes medicamento(s) pendiente(s)",
+            fontSize = 18.sp,
+            color = Color.Black,
+            modifier = Modifier.align(Alignment.Start)
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(14.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF99F3BD))
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(
-                    painter = painterResource(R.drawable.logopastillero),
-                    contentDescription = null,
-                    modifier = Modifier.size(55.dp)
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    text = "PILLBOT",
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = "Bienvenido, $nombreUsuario",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Text(
-                text = if (tomasPendientes > 0) "Tienes medicamentos pendientes por tomar" else "No tienes medicamentos pendientes",
-                color = Color.Gray
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Text(
-                text = "Hoy, $fechaFormateada",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.Black,
-                modifier = Modifier.align(Alignment.Start)
-            )
-            Text(
-                text = "$tomasPendientes medicamento(s) pendiente(s)",
-                fontSize = 18.sp,
-                color = Color.Black,
-                modifier = Modifier.align(Alignment.Start)
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF99F3BD))
-            ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(text = "Dosis Tomadas Hoy", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                        Text(text = "$porcentaje%", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    LinearProgressIndicator(
-                        progress = { progreso },
-                        modifier = Modifier.fillMaxWidth().height(10.dp),
-                        color = Color(0xFF59CBA2),
-                        trackColor = Color.White.copy(alpha = 0.5f)
-                    )
+            Column(modifier = Modifier.padding(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(text = "Dosis Tomadas Hoy", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                    Text(text = "$porcentaje%", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                 }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Lista de horarios",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            if (tomasHoy.isEmpty()) {
-                Text(
-                    text = "No hay tomas registradas para hoy.",
-                    color = Color.Gray,
-                    fontSize = 14.sp
+                Spacer(modifier = Modifier.height(8.dp))
+                LinearProgressIndicator(
+                    progress = progreso,
+                    modifier = Modifier.fillMaxWidth().height(10.dp),
+                    color = Color(0xFF59CBA2),
+                    trackColor = Color.White.copy(alpha = 0.5f)
                 )
-            } else {
-                tomasHoy.forEach { toma ->
-                    MedicamentItem(toma = toma)
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
             }
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "Lista de horarios",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Black,
+            modifier = Modifier.align(Alignment.Start)
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        if (tomasHoy.isEmpty()) {
+            Text(
+                text = "No hay tomas registradas para hoy.",
+                color = Color.Gray,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(vertical = 20.dp)
+            )
+        } else {
+            tomasHoy.forEach { toma ->
+                MedicamentItem(toma = toma)
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+        }
+
+        // Espaciador final para evitar que la barra inferior tape el último elemento
+        Spacer(modifier = Modifier.height(80.dp))
     }
 }
 
@@ -217,16 +155,15 @@ fun MedicamentItem(toma: TomaHoy) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFC5D6E6))
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF4F4F4))
     ) {
         Column {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF001A66))
+                    .background(Color(0xFF1D2A44))
                     .padding(vertical = 4.dp, horizontal = 16.dp)
             ) {
-                // Solución 1: Si la hora es nula, muestra un guion de respaldo seguro
                 Text(
                     text = toma.hora_toma ?: "--:--",
                     color = Color.White,
@@ -245,7 +182,6 @@ fun MedicamentItem(toma: TomaHoy) {
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
-                    // Solución 2: Si el nombre del medicamento es nulo, evita el crash mostrando un texto genérico
                     Text(
                         text = toma.nombre_medicamento ?: "Medicamento sin nombre",
                         fontWeight = FontWeight.Bold,
@@ -253,7 +189,6 @@ fun MedicamentItem(toma: TomaHoy) {
                         fontSize = 14.sp
                     )
 
-                    // Solución 3: Hacemos lo mismo con la dosis por seguridad
                     Text(
                         text = "Dosis: ${toma.dosis ?: "No especificada"}",
                         color = Color.DarkGray,

@@ -1,5 +1,6 @@
 package com.jimenaoropeza.pillbot.viewmodel
 
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jimenaoropeza.pillbot.modelo.Medicamento
@@ -8,12 +9,16 @@ import com.jimenaoropeza.pillbot.modelo.InventarioMedicamentoRequest // Tu nueva
 import com.jimenaoropeza.pillbot.repository.MedicamentoRepository
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 class MedicamentoViewModel : ViewModel() {
 
     private val repository = MedicamentoRepository()
 
     var medicamentos = mutableStateOf<List<Medicamento>>(emptyList())
+
+    // Dentro de MedicamentoViewModel.kt
+    var medicamentoSeleccionado by mutableStateOf<Medicamento?>(null)
 
     // Estado para controlar si el guardado en inventario fue exitoso
     var registroExitoso = mutableStateOf(false)

@@ -25,17 +25,22 @@ import com.jimenaoropeza.pillbot.R
 val AzulPillbot = Color(0xFF2298D4)
 val VerdePillbot = Color(0xFF59CBA2)
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConfiguracionPerfil(
-    currentScreen: String,
-    totalNoLeidas: Int,
-    onNavTabClick: (String) -> Unit,
+    usuarioId: Int,
     onCerrarSesion: () -> Unit
+    // Aquí puedes pasar tu AuthViewModel o el ViewModel que maneje los datos del usuario:
+    // authViewModel: AuthViewModel = viewModel()
 ) {
+    // -----------------------------------------------------------------------------------
+    // NOTA PARA BASE DE DATOS:
+    // Cuando conectes tu ViewModel, estos states iniciales se alimentarán de él. Ejemplo:
+    // LaunchedEffect(usuarioId) { authViewModel.obtenerPerfil(usuarioId) }
+    // val datosUsuario by authViewModel.perfilUsuario.collectAsState()
+    // -----------------------------------------------------------------------------------
 
-    var nombre by remember { mutableStateOf("Usuario López Martínez") }
-    var correo by remember { mutableStateOf("usuario@gmail.com") }
+    var nombre by remember { mutableStateOf("Jimena Oropeza Cruces") }
+    var correo by remember { mutableStateOf("jimena@oropeza.com") }
     var telefono by remember { mutableStateOf("477-123-4567") }
 
     var contacto1 by remember { mutableStateOf("Juan Perez Cortes") }
@@ -47,339 +52,224 @@ fun ConfiguracionPerfil(
     var passwordActual by remember { mutableStateOf("") }
     var passwordNueva by remember { mutableStateOf("") }
 
-    Scaffold(
+    // Contenedor directo sin Scaffold interno para acoplarse a tu PillBotNavigation global
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
 
-        bottomBar = {
+        Spacer(modifier = Modifier.height(12.dp))
 
-            NavigationBar(
-                containerColor = Color(0xFFF1F1F1)
+        Text(
+            text = "Configuración de perfil",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1D2A44)
+        )
+
+        Text(
+            text = "Administra tu información",
+            color = Color.Gray
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Tarjeta de foto de perfil superior
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFFF7FDFB)
+            ),
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                Box(modifier = Modifier.size(90.dp)) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_usuario),
+                        contentDescription = "Foto de perfil",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                    )
 
-                val navIcons = listOf(
-                    R.drawable.ic_inicio,
-                    R.drawable.ic_formulario,
-                    R.drawable.ic_notificacion,
-                    R.drawable.ic_inventario,
-                    R.drawable.ic_calendario,
-                    R.drawable.ic_emergencia,
-                    R.drawable.ic_perfil
-                )
-
-                val routes = listOf(
-                    "inicio",
-                    "formulario",
-                    "notificaciones",
-                    "inventario",
-                    "calendario",
-                    "controlEmergencia",
-                    "perfil"
-                )
-
-                navIcons.forEachIndexed { index, iconRes ->
-
-                    val isSelected = currentScreen == routes[index]
-
-                    NavigationBarItem(
-                        selected = isSelected,
-                        onClick = {
-                            onNavTabClick(routes[index])
-                        },
-                        icon = {
-
-                            Box {
-
-                                Image(
-                                    painter = painterResource(iconRes),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(32.dp)
-                                )
-
-                                if (index == 2 && totalNoLeidas > 0) {
-
-                                    Box(
-                                        modifier = Modifier
-                                            .size(16.dp)
-                                            .background(
-                                                Color.Red,
-                                                CircleShape
-                                            )
-                                            .align(Alignment.TopEnd),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-
-                                        Text(
-                                            text = totalNoLeidas.toString(),
-                                            color = Color.White,
-                                            fontSize = 9.sp
-                                        )
-                                    }
-                                }
-                            }
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            indicatorColor =
-                                if (isSelected)
-                                    VerdePillbot.copy(alpha = 0.3f)
-                                else
-                                    Color.Transparent
+                    IconButton(
+                        onClick = { /* Lógica para abrir galería o cámara */ },
+                        modifier = Modifier
+                            .size(30.dp)
+                            .align(Alignment.BottomEnd)
+                            .background(color = Color.White, shape = CircleShape)
+                            .border(width = 2.dp, color = VerdePillbot, shape = CircleShape)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_camera),
+                            contentDescription = "Cambiar foto",
+                            modifier = Modifier.size(18.dp)
                         )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column {
+                    Text(
+                        text = nombre,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = Color.Black
+                    )
+                    Text(
+                        text = correo,
+                        color = Color.Gray,
+                        fontSize = 14.sp
                     )
                 }
             }
         }
 
-    ) { paddingValues ->
+        Spacer(modifier = Modifier.height(25.dp))
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        TituloSeccion("Información personal")
+
+        CampoSimple(
+            titulo = "Nombre completo",
+            valor = nombre,
+            onValueChange = { nombre = it }
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                Image(
-                    painter = painterResource(R.drawable.logopastillero),
-                    contentDescription = null,
-                    modifier = Modifier.size(55.dp)
-                )
-
-                Spacer(modifier = Modifier.width(10.dp))
-
-                Text(
-                    text = "PILLBOT",
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = "Configuración de perfil",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
+            CampoSimple(
+                titulo = "Correo electrónico",
+                valor = correo,
+                onValueChange = { correo = it },
+                modifier = Modifier.weight(1f)
             )
-
-            Text(
-                text = "Administra tu información",
-                color = Color.Gray
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFD9D9D9)
-                ),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    Box(
-                        modifier = Modifier.size(90.dp)
-                    ) {
-
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_usuario),
-                            contentDescription = "Foto de perfil",
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(CircleShape)
-                        )
-
-                        IconButton(
-                            onClick = {},
-                            modifier = Modifier
-                                .size(30.dp)
-                                .offset(x = 8.dp, y = 8.dp)
-                                .align(Alignment.BottomEnd)
-                                .background(
-                                    color = Color.White,
-                                    shape = CircleShape
-                                )
-                                .border(
-                                    width = 2.dp,
-                                    color = VerdePillbot,
-                                    shape = CircleShape
-                                )
-                        )
-                        {
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_camera),
-                                contentDescription = "Cambiar foto",
-                                modifier = Modifier.size(28.dp)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    Column {
-
-                        Text(
-                            text = "Usuario",
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Text(
-                            text = correo,
-                            color = Color.Gray
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            TituloSeccion("Información personal")
 
             CampoSimple(
-                titulo = "Nombre completo",
-                valor = nombre
+                titulo = "Número telefónico",
+                valor = telefono,
+                onValueChange = { telefono = it },
+                modifier = Modifier.weight(1f)
             )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-
-                CampoSimple(
-                    titulo = "Correo electrónico",
-                    valor = correo,
-                    modifier = Modifier.weight(1f)
-                )
-
-                CampoSimple(
-                    titulo = "Número telefónico",
-                    valor = telefono,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            TituloSeccion("Contactos de emergencia")
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-
-                CampoSimple(
-                    titulo = "Nombre completo",
-                    valor = contacto1,
-                    modifier = Modifier.weight(1f)
-                )
-
-                CampoSimple(
-                    titulo = "Número telefónico",
-                    valor = telefono1,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-
-                CampoSimple(
-                    titulo = "Nombre completo",
-                    valor = contacto2,
-                    modifier = Modifier.weight(1f)
-                )
-
-                CampoSimple(
-                    titulo = "Número telefónico",
-                    valor = telefono2,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            TituloSeccion("Seguridad")
-
-            CampoPassword(
-                titulo = "Ingresa tu contraseña actual",
-                valor = passwordActual,
-                onValueChange = {
-                    passwordActual = it
-                }
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            CampoPassword(
-                titulo = "Ingresa tu contraseña nueva",
-                valor = passwordNueva,
-                onValueChange = {
-                    passwordNueva = it
-                }
-            )
-
-            Spacer(modifier = Modifier.height(30.dp))
-
-            Button(
-                onClick = { },
-                modifier = Modifier
-                    .fillMaxWidth(0.7f)
-                    .height(50.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = VerdePillbot
-                )
-            ) {
-
-                Text("Guardar Cambios")
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Button(
-                onClick = onCerrarSesion,
-                modifier = Modifier
-                    .fillMaxWidth(0.7f)
-                    .height(50.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF356799)
-                )
-            ) {
-
-                Text("Cerrar Sesión")
-            }
-
-            Spacer(modifier = Modifier.height(120.dp))
         }
+
+        Spacer(modifier = Modifier.height(25.dp))
+
+        TituloSeccion("Contactos de emergencia")
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            CampoSimple(
+                titulo = "Contacto 1",
+                valor = contacto1,
+                onValueChange = { contacto1 = it },
+                modifier = Modifier.weight(1f)
+            )
+
+            CampoSimple(
+                titulo = "Teléfono 1",
+                valor = telefono1,
+                onValueChange = { telefono1 = it },
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            CampoSimple(
+                titulo = "Contacto 2",
+                valor = contacto2,
+                onValueChange = { contacto2 = it },
+                modifier = Modifier.weight(1f)
+            )
+
+            CampoSimple(
+                titulo = "Teléfono 2",
+                valor = telefono2,
+                onValueChange = { telefono2 = it },
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(25.dp))
+
+        TituloSeccion("Seguridad")
+
+        CampoPassword(
+            titulo = "Ingresa tu contraseña actual",
+            valor = passwordActual,
+            onValueChange = { passwordActual = it }
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        CampoPassword(
+            titulo = "Ingresa tu contraseña nueva",
+            valor = passwordNueva,
+            onValueChange = { passwordNueva = it }
+        )
+
+        Spacer(modifier = Modifier.height(35.dp))
+
+        Button(
+            onClick = {
+                /* Aquí ejecutas el update hacia tu base de datos pasando las variables locales */
+            },
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .height(48.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = VerdePillbot),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text("GUARDAR CAMBIOS", fontWeight = FontWeight.Bold, color = Color.White)
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Button(
+            onClick = onCerrarSesion,
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .height(48.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF356799)),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text("CERRAR SESIÓN", fontWeight = FontWeight.Bold, color = Color.White)
+        }
+
+        // Espaciador inferior para evitar que el contenido quede oculto debajo de la bottom bar global
+        Spacer(modifier = Modifier.height(100.dp))
     }
 }
 
 @Composable
 fun TituloSeccion(texto: String) {
-
     Text(
         text = texto,
         modifier = Modifier.fillMaxWidth(),
-        textAlign = TextAlign.Center,
+        textAlign = TextAlign.Start,
         color = AzulPillbot,
         fontWeight = FontWeight.Bold,
-        fontSize = 20.sp
+        fontSize = 16.sp
     )
-
     Spacer(modifier = Modifier.height(10.dp))
 }
 
@@ -387,25 +277,27 @@ fun TituloSeccion(texto: String) {
 fun CampoSimple(
     titulo: String,
     valor: String,
+    onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-
     Column(modifier) {
-
         Text(
             text = titulo,
-            fontSize = 12.sp
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color.DarkGray
         )
-
         Spacer(modifier = Modifier.height(4.dp))
-
         OutlinedTextField(
             value = valor,
-            onValueChange = {},
+            onValueChange = onValueChange, // <- Agregado para habilitar la escritura real en el teclado
             modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(10.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = VerdePillbot,
-                unfocusedBorderColor = VerdePillbot
+                unfocusedBorderColor = Color(0xFFCCCCCC),
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White
             )
         )
     }
@@ -417,26 +309,25 @@ fun CampoPassword(
     valor: String,
     onValueChange: (String) -> Unit
 ) {
-
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-
+    Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = titulo,
-            fontSize = 12.sp
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color.DarkGray
         )
-
         Spacer(modifier = Modifier.height(4.dp))
-
         OutlinedTextField(
             value = valor,
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
+            shape = RoundedCornerShape(10.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = VerdePillbot,
-                unfocusedBorderColor = VerdePillbot
+                unfocusedBorderColor = Color(0xFFCCCCCC),
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White
             )
         )
     }

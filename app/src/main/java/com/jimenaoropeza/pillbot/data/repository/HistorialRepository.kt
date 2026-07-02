@@ -1,6 +1,6 @@
 package com.jimenaoropeza.pillbot.repository
 
-import com.jimenaoropeza.pillbot.modelo.HistorialRequest
+import com.jimenaoropeza.pillbot.data.modelo.HistorialRequest
 import com.jimenaoropeza.pillbot.network.RetrofitInstance
 
 class HistorialRepository {

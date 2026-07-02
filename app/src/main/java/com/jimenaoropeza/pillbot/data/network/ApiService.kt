@@ -4,7 +4,7 @@ import com.jimenaoropeza.pillbot.modelo.Medicamento
 import com.jimenaoropeza.pillbot.modelo.MedicamentoRequest
 import com.jimenaoropeza.pillbot.modelo.RecordatorioRequest
 import com.jimenaoropeza.pillbot.modelo.TomaHoy
-import com.jimenaoropeza.pillbot.modelo.HistorialRequest
+import com.jimenaoropeza.pillbot.data.modelo.HistorialRequest
 import com.jimenaoropeza.pillbot.modelo.LoginRequest
 import com.jimenaoropeza.pillbot.modelo.RegisterRequest
 import com.jimenaoropeza.pillbot.modelo.AuthResponse

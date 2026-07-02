@@ -1,6 +1,5 @@
 package com.jimenaoropeza.pillbot.pantallas
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
@@ -33,13 +32,11 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.jimenaoropeza.pillbot.viewmodel.MedicamentoViewModel
 import com.jimenaoropeza.pillbot.R
 import java.io.File
-import java.util.Objects
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormularioMedicamento(
-    currentScreen: String,
-    totalNoLeidas: Int,
+    currentScreen: String = "formulario",
+    totalNoLeidas: Int = 0,
     onNavTabClick: (String) -> Unit,
     viewModel: MedicamentoViewModel
 ) {
@@ -82,7 +79,6 @@ fun FormularioMedicamento(
                         if (visionText.text.isNotBlank()) {
                             textoExtraido = visionText.text
                             Toast.makeText(context, "¡Receta escaneada con éxito!", Toast.LENGTH_SHORT).show()
-
                         } else {
                             Toast.makeText(context, "No se detectó texto claro en la receta.", Toast.LENGTH_LONG).show()
                         }
@@ -99,153 +95,124 @@ fun FormularioMedicamento(
         }
     }
 
-    Scaffold(
-        bottomBar = {
-            NavigationBar(
-                containerColor = Color(0xFFF1F1F1),
-                tonalElevation = 4.dp
-            ) {
-                val navIcons = listOf(
-                    R.drawable.ic_inicio, R.drawable.ic_formulario, R.drawable.ic_notificacion,
-                    R.drawable.ic_inventario, R.drawable.ic_calendario, R.drawable.ic_emergencia, R.drawable.ic_perfil
-                )
-                val routes = listOf(
-                    "inicio", "formulario", "notificaciones", "inventario", "calendario", "controlEmergencia", "perfil"
-                )
+    // Estructura de contenido directa para acoplarse al NavController central
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(16.dp))
 
-                navIcons.forEachIndexed { index, iconRes ->
-                    val isSelected = currentScreen == routes[index]
-                    NavigationBarItem(
-                        selected = isSelected,
-                        onClick = { onNavTabClick(routes[index]) },
-                        icon = {
-                            Box(modifier = Modifier.wrapContentSize()) {
-                                Image(
-                                    painter = painterResource(id = iconRes),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(32.dp)
-                                )
-                                if (index == 2 && totalNoLeidas > 0) {
-                                    Box(
-                                        modifier = Modifier.size(16.dp).background(Color.Red, RoundedCornerShape(8.dp)).align(Alignment.TopEnd),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(text = totalNoLeidas.toString(), color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                                    }
-                                }
-                            }
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            indicatorColor = if (isSelected) Color(0xFF59CBA2).copy(alpha = 0.3f) else Color.Transparent
+        Text(text = "Registrar medicamentos", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1D2A44))
+        Text(text = "Agrega un nuevo medicamento al dispensador", color = Color.Gray, textAlign = TextAlign.Center)
+
+        Spacer(modifier = Modifier.height(25.dp))
+        Text(
+            text = "¿Cómo deseas agregar tu medicamento?",
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color.Black,
+            modifier = Modifier.align(Alignment.Start)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // OPCIÓN 1: ESCANEAR RECETA
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFF7FDFB)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(18.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(painter = painterResource(id = R.drawable.ic_camera), contentDescription = null, modifier = Modifier.size(50.dp))
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(text = "Escanear receta impresa", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Coloca la receta impresa en una superficie plana y bien iluminada para extraer la información.",
+                    fontSize = 12.sp,
+                    color = Color.DarkGray,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 120.dp)
+                        .background(Color(0xFFF1F1F1), RoundedCornerShape(12.dp))
+                        .padding(12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (procesandoEscaneo) {
+                        CircularProgressIndicator(color = Color(0xFF59CBA2))
+                    } else {
+                        Text(
+                            text = if (textoExtraido.isNotBlank()) "Texto detectado:\n\n$textoExtraido" else "Ninguna imagen escaneada aún",
+                            color = if (textoExtraido.isNotBlank()) Color.Black else Color.Gray,
+                            fontSize = 13.sp,
+                            textAlign = if (textoExtraido.isNotBlank()) TextAlign.Start else TextAlign.Center
                         )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Button(
+                    onClick = { cameraLauncher.launch(uriImagenTemporal) },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF59CBA2)),
+                    enabled = !procesandoEscaneo
+                ) {
+                    Text(
+                        text = if (textoExtraido.isNotBlank()) "ESCANEAR DE NUEVO" else "ABRIR CÁMARA",
+                        color = Color.White,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
         }
-    ) { paddingValues ->
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // OPCIÓN 2: MANUAL
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFF7FDFB)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(painter = painterResource(R.drawable.logopastillero), contentDescription = null, modifier = Modifier.size(55.dp))
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(text = "PILLBOT", fontSize = 32.sp, fontWeight = FontWeight.Bold)
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(text = "Registrar medicamentos", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-            Text(text = "Agrega un nuevo medicamento al dispensador", color = Color.Gray, textAlign = TextAlign.Center)
-
-            Spacer(modifier = Modifier.height(25.dp))
-            Text(text = "¿Cómo deseas agregar tu medicamento?", fontSize = 15.sp, fontWeight = FontWeight.Medium, color = Color.Black, modifier = Modifier.align(Alignment.Start))
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF7FDFB)),
-                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+            Column(
+                modifier = Modifier.padding(18.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    modifier = Modifier.padding(18.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Image(painter = painterResource(id = R.drawable.ic_edit), contentDescription = null, modifier = Modifier.size(50.dp))
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(text = "Ingresar manualmente", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = Color.Black)
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Completa el formulario tradicional con el nombre, los horarios y las dosis del tratamiento.",
+                    fontSize = 12.sp,
+                    color = Color.DarkGray,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { onNavTabClick("formularioManual") },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF59CBA2))
                 ) {
-                    Image(painter = painterResource(id = R.drawable.ic_camera), contentDescription = null, modifier = Modifier.size(50.dp))
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(text = "Escanear receta impresa", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 17.sp)
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(text = "Coloca la receta impresa en una superficie plana y bien iluminada para extraer la información.", fontSize = 12.sp, color = Color.DarkGray, textAlign = TextAlign.Center)
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 120.dp)
-                            .background(Color(0xFFF1F1F1), RoundedCornerShape(12.dp))
-                            .padding(12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (procesandoEscaneo) {
-                            CircularProgressIndicator(color = Color(0xFF59CBA2))
-                        } else {
-                            Text(
-                                text = if (textoExtraido.isNotBlank()) "Texto detectado:\n\n$textoExtraido" else "Ninguna imagen escaneada aún",
-                                color = if (textoExtraido.isNotBlank()) Color.Black else Color.Gray,
-                                fontSize = 13.sp,
-                                textAlign = if (textoExtraido.isNotBlank()) TextAlign.Start else TextAlign.Center
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    Button(
-                        onClick = { cameraLauncher.launch(uriImagenTemporal) },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF59CBA2)),
-                        enabled = !procesandoEscaneo
-                    ) {
-                        Text(text = if (textoExtraido.isNotBlank()) "ESCANEAR DE NUEVO" else "ABRIR CÁMARA", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                    }
+                    Text(text = "ABRIR FORMULARIO", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 }
             }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF7FDFB)),
-                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(18.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Image(painter = painterResource(id = R.drawable.ic_edit), contentDescription = null, modifier = Modifier.size(50.dp))
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(text = "Ingresar manualmente", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = Color.Black)
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(text = "Completa el formulario tradicional con el nombre, los horarios y las dosis del tratamiento.", fontSize = 12.sp, color = Color.DarkGray, textAlign = TextAlign.Center)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = { onNavTabClick("formularioManual") },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF59CBA2))
-                    ) {
-                        Text(text = "ABRIR FORMULARIO", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(40.dp))
         }
+
+        // Margen inferior para que la barra de pestañas global no tape las tarjetas
+        Spacer(modifier = Modifier.height(80.dp))
     }
 }

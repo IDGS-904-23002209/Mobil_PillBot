@@ -1,8 +1,10 @@
-package com.jimenaoropeza.pillbot.modelo
+package com.jimenaoropeza.pillbot.data.modelo
 
 data class HistorialRequest(
-    val id_recordatorio: Int,
-    val fecha_registro: String,
-    val hora_registro: String,
-    val estatus: String
+    val IdToma: Int,
+    val FechaReal: String,       // Enviará la fecha en formato ISO completo
+    val HoraReal: String,        // Enviará la hora en formato ISO completo
+    val Estatus: String,
+    val PesoDetectado: Double = 0.0,
+    val ConfirmadaPorIr: Boolean = false
 )

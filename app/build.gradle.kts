@@ -67,5 +67,11 @@ dependencies {
     // Google ML Kit Text Recognition (Para escanear la receta impresa)
     implementation("com.google.mlkit:text-recognition:16.0.1")
 
+    // Dependencia oficial de Android para tareas en segundo plano
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
+    // Librería oficial de navegación para Jetpack Compose
+    implementation("androidx.navigation:navigation-compose:2.8.5")
+
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }
