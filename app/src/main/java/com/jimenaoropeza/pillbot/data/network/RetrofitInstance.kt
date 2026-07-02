@@ -7,8 +7,6 @@ object RetrofitInstance {
     private const val
             BASE_URL = "https://069d50f7-7046.usw3.devtunnels.ms/"
 
-
-
     val api: ApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)

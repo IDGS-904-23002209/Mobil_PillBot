@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jimenaoropeza.pillbot.modelo.TomaHoy
-import com.jimenaoropeza.pillbot.data.repository.TomaHoyRepository
+import com.jimenaoropeza.pillbot.repository.TomaHoyRepository
 import kotlinx.coroutines.launch
 
 class TomaHoyViewModel : ViewModel() {
