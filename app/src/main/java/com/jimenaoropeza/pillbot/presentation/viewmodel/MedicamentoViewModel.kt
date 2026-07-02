@@ -10,6 +10,7 @@ import com.jimenaoropeza.pillbot.repository.MedicamentoRepository
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import android.util.Log
 
 class MedicamentoViewModel : ViewModel() {
 
@@ -23,15 +24,6 @@ class MedicamentoViewModel : ViewModel() {
     // Estado para controlar si el guardado en inventario fue exitoso
     var registroExitoso = mutableStateOf(false)
 
-    fun cargarMedicamentos(usuarioId: Int) {
-        viewModelScope.launch {
-            try {
-                medicamentos.value = repository.obtenerMedicamentos(usuarioId)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
 
     fun guardarMedicamento(
         medicamento: MedicamentoRequest,
@@ -66,6 +58,20 @@ class MedicamentoViewModel : ViewModel() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 onResult(false, "Error de red: ${e.message}")
+            }
+        }
+    }
+
+
+    fun cargarMedicamentos(usuarioId: Int) {
+        viewModelScope.launch {
+            try {
+                val lista = repository.obtenerMedicamentos(usuarioId)
+                Log.d("MEDICAMENTOS_API", lista.toString())
+                medicamentos.value = lista
+            } catch (e: Exception) {
+                Log.e("MEDICAMENTOS_API", "Error: ${e.message}")
+                e.printStackTrace()
             }
         }
     }

@@ -166,6 +166,8 @@ fun PillBotNavigation(
 
             NavHost(
                 navController = navController,
+                //linea cambiada temporalmente
+                // startDestination = "inventario",
                 startDestination = Screen.Login.route,
                 modifier = Modifier.weight(1f)
             ) {
