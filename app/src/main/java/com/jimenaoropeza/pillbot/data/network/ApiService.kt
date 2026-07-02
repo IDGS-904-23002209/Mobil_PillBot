@@ -23,7 +23,7 @@ data class RespuestaServidor(
 
 interface ApiService {
 
-    @GET("api/medicamentos/{usuario_id}")
+    @GET("api/medicamentos/paciente/{usuario_id}")
     suspend fun obtenerMedicamentos(
         @Path("usuario_id") usuarioId: Int
     ): List<Medicamento>
