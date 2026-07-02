@@ -324,9 +324,8 @@ fun DayView(
         tomasHoy
     }
 
-    // 1. Estandarizar las horas con formato de 2 dígitos (HH:mm)
     val horas = listOf(
-        "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
+        "6:00", "7:00", "8:00", "9:00", "10:00", "11:00",
         "12:00", "13:00", "14:00", "15:00", "16:00", "17:00",
         "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"
     )
@@ -479,15 +478,8 @@ fun DayView(
         )
 
         horas.forEach { hora ->
-            // 2. Filtrar comparando las primeras dos cifras (la hora exacta) de forma segura
-            val tomasEnHora = tomasMostrar.filter { toma ->
-                val horaToma = toma.hora_toma ?: ""
-                // Si viene como "08:00:00" o "08:00", extraemos los primeros 2 caracteres "08"
-                if (horaToma.length >= 2) {
-                    horaToma.substring(0, 2) == hora.substring(0, 2)
-                } else {
-                    false
-                }
+            val tomasEnHora = tomasMostrar.filter {
+                it.hora_toma?.startsWith(hora.take(2)) == true
             }
 
             Card(
@@ -545,9 +537,14 @@ fun DayView(
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = "(${toma.dosis ?: "${toma.cantidad_dosis ?: 1} dosis"})", // Por si las propiedades del JSON real varían
+                                        text = "(${toma.dosis ?: "Sin dosis"})",
                                         fontSize = 11.sp,
                                         color = Color.Gray
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = if (toma.tomado) "" else "",
+                                        fontSize = 13.sp
                                     )
                                 }
                                 if (index < tomasEnHora.size - 1) {
