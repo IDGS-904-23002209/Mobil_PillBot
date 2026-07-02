@@ -4,6 +4,7 @@ import com.jimenaoropeza.pillbot.modelo.CatalogoMedicamentoRequest
 import com.jimenaoropeza.pillbot.modelo.Medicamento
 import com.jimenaoropeza.pillbot.modelo.MedicamentoRequest
 import com.jimenaoropeza.pillbot.modelo.InventarioMedicamentoRequest
+import com.jimenaoropeza.pillbot.modelo.TipoPresentacion
 import com.jimenaoropeza.pillbot.network.RetrofitInstance
 import com.jimenaoropeza.pillbot.network.RespuestaServidor
 import retrofit2.Response
@@ -35,4 +36,16 @@ class MedicamentoRepository {
     ): Response<RespuestaServidor> {
         return api.registrarMedicamentoCatalogo(request)
     }
+
+    suspend fun obtenerCategorias() =
+        api.obtenerCategorias()
+
+    suspend fun obtenerPresentaciones(): List<TipoPresentacion> =
+        api.obtenerPresentaciones()
+
+    suspend fun obtenerUnidadesMedida() =
+        api.obtenerUnidadesMedida()
+
+
+
 }

@@ -20,7 +20,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.jimenaoropeza.pillbot.R
 import com.jimenaoropeza.pillbot.pantallas.*
-import com.jimenaoropeza.pillbot.presentation.components.Screen
 import com.jimenaoropeza.pillbot.presentation.screens.Notificaciones
 import com.jimenaoropeza.pillbot.viewmodel.MedicamentoViewModel
 import com.jimenaoropeza.pillbot.viewmodel.RecordatorioViewModel
@@ -172,7 +171,7 @@ fun PillBotNavigation(
                 navController = navController,
                 //linea cambiada temporalmente
                 // startDestination = "inventario",
-                startDestination = Screen.Login.route,
+                startDestination = Screen.Inicio.route,
                 modifier = Modifier.weight(1f)
             ) {
                 // Pantalla: Login
@@ -297,11 +296,22 @@ fun PillBotNavigation(
 
                 // Pantalla: Recargar stock de Medicamento
                 composable(route = "recargarMedicamento") {
-                    RecargarMedicamento(
-                        onVolver = { navController.popBackStack() }
-                    )
-                }
 
+                    val medicamentoSeleccionado = medicamentoViewModel.medicamentoSeleccionado
+
+                    if (medicamentoSeleccionado != null) {
+
+                        RecargarMedicamento(
+                            medicamento = medicamentoSeleccionado,
+                            onVolver = { navController.popBackStack() }
+                        )
+
+                    } else {
+
+                        navController.popBackStack()
+
+                    }
+                }
                 // Pantalla: Perfil de Configuración de Usuario
                 composable(route = Screen.Perfil.route) {
                     ConfiguracionPerfil(
