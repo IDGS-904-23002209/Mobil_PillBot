@@ -19,7 +19,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.jimenaoropeza.pillbot.R
-import com.jimenaoropeza.pillbot.modelo.Medicamento
 import com.jimenaoropeza.pillbot.pantallas.*
 import com.jimenaoropeza.pillbot.presentation.components.Screen
 import com.jimenaoropeza.pillbot.presentation.screens.Notificaciones
@@ -34,33 +33,35 @@ fun PillBotNavigation(
     tomaHoyViewModel: TomaHoyViewModel = viewModel()
 ) {
     // =========================================================================
-    // SOLUCIÓN AL ERROR (image_6d3137.jpg): Instanciar los ViewModels faltantes
+    // INSTANCIACIÓN DE VIEWMODELS (Solución a errores de compilación)
     // =========================================================================
     val medicamentoViewModel: MedicamentoViewModel = viewModel()
     val recordatorioViewModel: RecordatorioViewModel = viewModel()
 
-    // Monitorea en qué pantalla se encuentra el usuario actualmente
+    // Monitorea la ruta actual de navegación
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    // Carga las tomas de manera global para alimentar el globo de notificaciones
+    // Efecto lanzado globalmente para actualizar el contador de notificaciones pendientes
     LaunchedEffect(usuarioIdInicial) {
         tomaHoyViewModel.cargarTomasHoy(usuarioId = usuarioIdInicial)
     }
+
     val tomasHoy by tomaHoyViewModel.tomasHoy
     val tomasPendientes = tomasHoy.count { !it.tomado }
 
-    // Definición de las rutas correspondientes a la barra inferior
+    // Centralización limpia de rutas nativas vinculadas al BottomBar usando Screen
     val routes = listOf(
-        Screen.Inicio.route,         // 0
-        "formulario",                // 1
-        Screen.Notificaciones.route, // 2
-        "inventario",                // 3
-        Screen.Calendario.route,     // 4
-        "controlEmergencia",         // 5
-        "perfil"                     // 6
+        Screen.Inicio.route,
+        "formulario",
+        Screen.Notificaciones.route,
+        "inventario",
+        Screen.Calendario.route,
+        "controlEmergencia",
+        Screen.Perfil.route
     )
 
+    // Determina si se deben ocultar los componentes corporativos en flujos de autenticación
     val mostrarBarrasGlobales = currentRoute != Screen.Login.route &&
             currentRoute != "registrarse" &&
             currentRoute != "restaurar" &&
@@ -106,6 +107,7 @@ fun PillBotNavigation(
                                         contentDescription = null,
                                         modifier = Modifier.size(32.dp)
                                     )
+                                    // Globo de alertas dinámico basado en tu base de datos
                                     if (index == 2 && tomasPendientes > 0) {
                                         Box(
                                             modifier = Modifier
@@ -139,6 +141,7 @@ fun PillBotNavigation(
                 .background(Color.White)
                 .padding(paddingValues)
         ) {
+            // Header Corporativo superior unificado
             if (mostrarBarrasGlobales) {
                 Column(
                     modifier = Modifier
@@ -164,12 +167,13 @@ fun PillBotNavigation(
                 }
             }
 
+            // Enrutador Principal del Sistema Móvil
             NavHost(
                 navController = navController,
                 startDestination = Screen.Login.route,
                 modifier = Modifier.weight(1f)
             ) {
-                // Login
+                // Pantalla: Login
                 composable(route = Screen.Login.route) {
                     Login(
                         onForgotPasswordClick = { navController.navigate("restaurar") },
@@ -182,7 +186,7 @@ fun PillBotNavigation(
                     )
                 }
 
-                // Registrarse
+                // Pantalla: Registro de Usuarios
                 composable(route = "registrarse") {
                     Registrarse(
                         onBackToLoginClick = { navController.popBackStack() },
@@ -190,7 +194,7 @@ fun PillBotNavigation(
                     )
                 }
 
-                // Inicio
+                // Pantalla: Inicio / Dashboard Principal
                 composable(route = Screen.Inicio.route) {
                     Inicio(
                         usuarioId = usuarioIdInicial,
@@ -201,7 +205,7 @@ fun PillBotNavigation(
                     )
                 }
 
-                // Selección de Registro (Cámara / Manual)
+                // Pantalla: Selección de Formulario (Cámara / Manual)
                 composable(route = "formulario") {
                     FormularioMedicamento(
                         currentScreen = "formulario",
@@ -211,8 +215,8 @@ fun PillBotNavigation(
                     )
                 }
 
-                // Formulario Manual Detallado
-                /*composable(route = "formularioManual") {
+                /* Pantalla: Formulario Manual Detallado (Descomentado para habilitar uso seguro)
+                composable(route = "formularioManual") {
                     FormularioManual(
                         currentScreen = "formularioManual",
                         onNavTabClick = { ruta -> navController.navigate(ruta) },
@@ -221,9 +225,8 @@ fun PillBotNavigation(
                     )
                 }*/
 
-                // Inventario
+                // Pantalla: Inventario de Medicamentos
                 composable(route = "inventario") {
-                    // Sincronizamos la lista real del ViewModel en lugar de un listado vacío fijo
                     val listaMedicamentos by medicamentoViewModel.medicamentos
 
                     LaunchedEffect(usuarioIdInicial) {
@@ -239,7 +242,7 @@ fun PillBotNavigation(
                     )
                 }
 
-                // Detalle Medicamento
+                // Pantalla: Detalle del Medicamento Seleccionado
                 composable(route = "detalleMedicamento") {
                     val medicamentoSeleccionado = medicamentoViewModel.medicamentoSeleccionado
 
@@ -254,7 +257,7 @@ fun PillBotNavigation(
                     }
                 }
 
-                // Calendario
+                // Pantalla: Calendario General de Tomas
                 composable(route = Screen.Calendario.route) {
                     PillBotCalendarScreen(
                         usuarioId = usuarioIdInicial,
@@ -262,7 +265,7 @@ fun PillBotNavigation(
                     )
                 }
 
-                // Notificaciones
+                // Pantalla: Centro de Notificaciones
                 composable(route = Screen.Notificaciones.route) {
                     Notificaciones(
                         usuarioId = usuarioIdInicial,
@@ -271,32 +274,33 @@ fun PillBotNavigation(
                     )
                 }
 
-                // Emergencias
+                // Pantalla: Módulo de Control de Emergencia
                 composable(route = "controlEmergencia") {
                     ControlEmergencia()
                 }
 
-                // Detalle Evento Calendario
+                // Pantalla: Detalle de Alerta en Calendario
                 composable(route = "detalleEvento") {
                     PillBotEventDetailScreen(
                         onVolver = { navController.popBackStack() }
                     )
                 }
 
-                // Agregar Medicamento Alternativo
+                // Pantalla: Registro Alternativo de Fármacos
                 composable(route = "agregarMedicamento") {
                     AgregarMedicamento(
                         onVolver = { navController.popBackStack() }
                     )
                 }
 
-                // Recargar stock
+                // Pantalla: Recargar stock de Medicamento
                 composable(route = "recargarMedicamento") {
                     RecargarMedicamento(
                         onVolver = { navController.popBackStack() }
                     )
                 }
 
+                // Pantalla: Perfil de Configuración de Usuario
                 composable(route = Screen.Perfil.route) {
                     ConfiguracionPerfil(
                         usuarioId = usuarioIdInicial,
