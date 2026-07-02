@@ -16,16 +16,11 @@ class AuthRepository {
     ): Response<LoginResponse> {
         val request = LoginRequest(
             correo = correo,
-            contrasena = contrasena,
-            dispositivo = "Android Mobile (Moto G54)",
-            ipOrigen = "127.0.0.1",
-            detallesNavegador = "PillBot App v1.0"
+            contrasena = contrasena
         )
-        // Llamamos directamente a la API usando el request estructurado
         return api.login(request)
     }
 
-    // Función para el registro de usuarios
     suspend fun registrar(
         nombre: String,
         apellidoPaterno: String,

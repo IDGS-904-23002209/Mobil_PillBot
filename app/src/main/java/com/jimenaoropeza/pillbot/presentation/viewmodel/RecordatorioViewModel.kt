@@ -10,6 +10,7 @@ class RecordatorioViewModel : ViewModel() {
 
     private val repository = RecordatorioRepository()
 
+    // Mantenemos únicamente tu función original para registrar/guardar medicamentos
     fun guardarRecordatorio(
         recordatorio: RecordatorioRequest,
         onSuccess: () -> Unit = {}

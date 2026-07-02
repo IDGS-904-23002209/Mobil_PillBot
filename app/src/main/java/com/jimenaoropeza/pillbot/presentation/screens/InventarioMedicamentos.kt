@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jimenaoropeza.pillbot.R
-import com.jimenaoropeza.pillbot.modelo.Medicamento // Asegúrate de apuntar a tus modelos reales
+import com.jimenaoropeza.pillbot.modelo.Medicamento
 import com.jimenaoropeza.pillbot.modelo.MedicamentoRequest
 import com.jimenaoropeza.pillbot.modelo.RecordatorioRequest
 import com.jimenaoropeza.pillbot.viewmodel.MedicamentoViewModel
@@ -29,9 +29,9 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
-// ==========================================
+// =========================================================================
 // 1. INVENTARIO DE MEDICAMENTOS (LISTA PRINCIPAL)
-// ==========================================
+// =========================================================================
 @Composable
 fun InventarioMedicamentosScreen(
     medicamentos: List<Medicamento>,
@@ -79,7 +79,7 @@ fun InventarioMedicamentosScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Renderizado de las tarjetas dinámicas
+        // Filtrado en tiempo real desde la barra de búsqueda
         medicamentos.filter { it.nombre_medicamento.contains(query, ignoreCase = true) }.forEach { medicamento ->
             MedicamentoCard(
                 nombre = "${medicamento.nombre_medicamento} ${medicamento.gramaje_medicamento}",
@@ -140,13 +140,14 @@ fun MedicamentoCard(
 }
 
 
-// ==========================================
+// =========================================================================
 // 2. FORMULARIO MANUAL DE REGISTRO
-// ==========================================
+// =========================================================================
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormularioManual(
-    onVolver: () -> Unit,
+    currentScreen: String,
+    onNavTabClick: (String) -> Unit, // Acoplado perfectamente a la firma de PillBotNavigation
     viewModel: MedicamentoViewModel,
     recordatorioViewModel: RecordatorioViewModel
 ) {
@@ -191,7 +192,7 @@ fun FormularioManual(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // INFORMACIÓN DEL MEDICAMENTO
+        // TARJETA: INFORMACIÓN BÁSICA
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -233,7 +234,7 @@ fun FormularioManual(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // ADMINISTRACIÓN
+        // TARJETA: ADMINISTRACIÓN
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -294,7 +295,7 @@ fun FormularioManual(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // HORARIOS
+        // TARJETA: HORARIOS Y VIGENCIA
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -355,7 +356,7 @@ fun FormularioManual(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // INVENTARIO
+        // TARJETA: CONTROL DE STOCK
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -397,7 +398,7 @@ fun FormularioManual(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // OBSERVACIONES
+        // TARJETA: OBSERVACIONES EXTRA
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -426,6 +427,7 @@ fun FormularioManual(
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        // BOTÓN: ACCIÓN DE GUARDADO REMOTO
         Button(
             onClick = {
                 val medicamento = MedicamentoRequest(
@@ -448,17 +450,19 @@ fun FormularioManual(
                             else -> 24
                         }
 
+                        // Corregido a 'dias_tratamiento' nativo en español para el modelo de datos
                         val recordatorio = RecordatorioRequest(
                             id_usuario = 1,
                             id_medicamento = medicamentoCreado.id_medicamento,
                             hora_toma = horaPrimeraToma,
                             frecuencia_horas = frecuenciaHoras,
                             dosis = unidades,
-                            dias_tratamiento = calcularDiasTratamiento(fechaInicio, fechaFin)                                   )
+                            dias_tratamiento = calcularDiasTratamiento(fechaInicio, fechaFin)
+                        )
 
                         recordatorioViewModel.guardarRecordatorio(
                             recordatorio = recordatorio,
-                            onSuccess = { onVolver() }
+                            onSuccess = { onNavTabClick("inventario") }
                         )
                     }
                 )
@@ -473,7 +477,7 @@ fun FormularioManual(
         Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedButton(
-            onClick = { onVolver() },
+            onClick = { onNavTabClick("inventario") },
             modifier = Modifier.fillMaxWidth(0.7f).height(48.dp),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = VerdePillbot)
@@ -481,7 +485,7 @@ fun FormularioManual(
             Text(text = "Volver", fontWeight = FontWeight.Bold)
         }
 
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(100.dp))
     }
 }
 
