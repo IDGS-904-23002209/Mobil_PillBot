@@ -14,6 +14,9 @@ import com.jimenaoropeza.pillbot.modelo.LoginResponse
 import com.jimenaoropeza.pillbot.modelo.InventarioMedicamentoRequest // 🔥 Asegúrate de tener creada esta data class
 import com.jimenaoropeza.pillbot.modelo.TipoPresentacion
 import com.jimenaoropeza.pillbot.modelo.UnidadMedida
+import com.jimenaoropeza.pillbot.data.modelo.Tratamiento
+
+
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -79,6 +82,11 @@ interface ApiService {
 
     @GET("api/unidadesMedida")
     suspend fun obtenerUnidadesMedida(): List<UnidadMedida>
+
+    @POST("api/tratamientos")
+    suspend fun registrarTratamiento(
+        @Body tratamiento: Tratamiento
+    ): Response<RespuestaServidor>
 
 
 }

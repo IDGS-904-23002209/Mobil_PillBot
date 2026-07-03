@@ -32,6 +32,7 @@ fun Inicio(
     onNavTabClick: (String) -> Unit = {}, // <-- Agregado para cumplir los requisitos de firma del Nav
     onIrANotificaciones: () -> Unit,       // <-- Sincronizado con NavController
     onIrACalendario: () -> Unit,           // <-- Sincronizado con NavController
+    onIrATratamiento: () -> Unit,
     viewModel: TomaHoyViewModel = viewModel(),
     nombreUsuario: String = "Usuario"      // Por seguridad tiene un valor por defecto
 ) {
@@ -87,12 +88,29 @@ fun Inicio(
             color = Color.Black,
             modifier = Modifier.align(Alignment.Start)
         )
-        Text(
-            text = "$tomasPendientes medicamento(s) pendiente(s)",
-            fontSize = 18.sp,
-            color = Color.Black,
-            modifier = Modifier.align(Alignment.Start)
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            Text(
+                text = "$tomasPendientes medicamento(s) pendiente(s)",
+                fontSize = 18.sp,
+                color = Color.Black
+            )
+
+            IconButton(
+                onClick = onIrATratamiento
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_tratamiento),
+                    contentDescription = "Tratamiento",
+                    modifier = Modifier.size(34.dp)
+                )
+            }
+
+        }
 
         Spacer(modifier = Modifier.height(20.dp))
 

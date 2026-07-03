@@ -49,7 +49,7 @@ data class CatalogoMedicamentoRequest(
     val gramaje: String,
 
     @SerializedName("fabricante")
-    val fabricante: String,
+    val fabricante: String? = null,
 
     @SerializedName("requiereReceta")
     val requiereReceta: Boolean,

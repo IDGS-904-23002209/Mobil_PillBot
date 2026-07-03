@@ -23,6 +23,8 @@ import com.jimenaoropeza.pillbot.pantallas.*
 import com.jimenaoropeza.pillbot.presentation.screens.Notificaciones
 import com.jimenaoropeza.pillbot.viewmodel.MedicamentoViewModel
 import com.jimenaoropeza.pillbot.viewmodel.RecordatorioViewModel
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -202,6 +204,9 @@ fun PillBotNavigation(
                         nombreUsuario = "Jimena",
                         onIrANotificaciones = { navController.navigate(Screen.Notificaciones.route) },
                         onIrACalendario = { navController.navigate(Screen.Calendario.route) },
+                        onIrATratamiento = {
+                            navController.navigate(Screen.Tratamiento.route)
+                        },
                         viewModel = tomaHoyViewModel
                     )
                 }
@@ -321,6 +326,12 @@ fun PillBotNavigation(
                                 popUpTo(0) { inclusive = true }
                             }
                         }
+                    )
+                }
+
+                composable(route = Screen.Tratamiento.route) {
+                    Tratamiento(
+                        onVolver = { navController.popBackStack() }
                     )
                 }
             }

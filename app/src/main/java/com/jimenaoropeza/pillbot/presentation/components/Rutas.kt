@@ -15,4 +15,6 @@ sealed class Screen(val route: String) {
     object DetalleMedicamento : Screen("detalleMedicamento")
     object AgregarMedicamento : Screen("agregarMedicamento")
     object RecargarMedicamento : Screen("recargarMedicamento")
+
+    object Tratamiento : Screen("tratamiento")
 }

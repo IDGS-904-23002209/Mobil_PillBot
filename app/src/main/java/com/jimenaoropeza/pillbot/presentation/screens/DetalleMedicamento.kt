@@ -62,8 +62,8 @@ import com.jimenaoropeza.pillbot.repository.MedicamentoRepository
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.*
 import androidx.compose.material3.DropdownMenuItem
-import com.jimenaoropeza.pillbot.modelo.InventarioMedicamentoRequest
-
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetalleMedicamento(
@@ -80,41 +80,19 @@ fun DetalleMedicamento(
             .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(
+                onClick = onVolver
             ) {
-                IconButton(
-                    onClick = onVolver,
-                    modifier = Modifier.align(Alignment.CenterStart)
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = null,
+                    modifier = Modifier.size(28.dp)
                 )
-                {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Regresar al inventario",
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.align(Alignment.Center)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.logopastillero),
-                        contentDescription = null,
-                        modifier = Modifier.size(50.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Text(
-                        text = "PILLBOT",
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Black
-                    )
-                }
             }
+        }
 
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -208,6 +186,7 @@ fun AgregarMedicamento(
 ){
 
     val viewModel: MedicamentoViewModel = viewModel()
+    val context = LocalContext.current
 
     var nombreComercial by remember { mutableStateOf("") }
     var principioActivo by remember { mutableStateOf("") }
@@ -258,7 +237,6 @@ fun AgregarMedicamento(
     }
 
     var gramaje by remember { mutableStateOf("") }
-    var fabricante by remember { mutableStateOf("") }
     var requiereReceta by remember { mutableStateOf(false) }
 
 
@@ -268,57 +246,12 @@ fun AgregarMedicamento(
             .padding(14.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-
-                IconButton(
-                    onClick = onVolver,
-                    modifier = Modifier.align(Alignment.CenterStart)
-                ) {
-
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = null,
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.align(Alignment.Center)
-                ) {
-
-                    Image(
-                        painter = painterResource(id = R.drawable.logopastillero),
-                        contentDescription = null,
-                        modifier = Modifier.size(50.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Text(
-                        text = "PILLBOT",
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Black
-                    )
-                }
-            }
-
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
                 text = "Agregar medicamento",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
-
-            Text(
-                text = "Registrar medicamento en el catálogo",
-                fontSize = 12.sp,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
 
@@ -535,17 +468,7 @@ fun AgregarMedicamento(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
 
-                    Text("Fabricante")
-
-                    OutlinedTextField(
-                        value = fabricante,
-                        onValueChange = {
-                            fabricante = it
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -592,22 +515,19 @@ fun AgregarMedicamento(
 
                         gramaje = gramaje,
 
-                        fabricante = fabricante,
-
                         requiereReceta = requiereReceta
                     )
 
                     viewModel.registrarMedicamentoCatalogo(request) { correcto, mensaje ->
 
                         if (correcto) {
-
+                            Toast.makeText(context, "Registrado correctamente", Toast.LENGTH_SHORT).show()
                             nombreComercial = ""
                             principioActivo = ""
                             categoriaSeleccionada = null
                             presentacionSeleccionada = null
                             unidadSeleccionada = null
                             gramaje = ""
-                            fabricante = ""
                             requiereReceta = false
 
                         }
