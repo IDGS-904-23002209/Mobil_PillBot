@@ -29,9 +29,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
-// =========================================================================
-// 1. INVENTARIO DE MEDICAMENTOS (LISTA PRINCIPAL)
-// =========================================================================
 @Composable
 fun InventarioMedicamentosScreen(
     medicamentos: List<Medicamento>,
@@ -50,7 +47,7 @@ fun InventarioMedicamentosScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = "Inventario de medicamentos",
+            text = "Historial de medicamentos",
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF1D2A44)
@@ -140,14 +137,12 @@ fun MedicamentoCard(
 }
 
 
-// =========================================================================
 // 2. FORMULARIO MANUAL DE REGISTRO
-// =========================================================================
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormularioManual(
     currentScreen: String,
-    onNavTabClick: (String) -> Unit, // Acoplado perfectamente a la firma de PillBotNavigation
+    onNavTabClick: (String) -> Unit,
     viewModel: MedicamentoViewModel,
     recordatorioViewModel: RecordatorioViewModel
 ) {
@@ -218,7 +213,10 @@ fun FormularioManual(
                         label = { Text("Nombre") },
                         placeholder = { Text("Paracetamol") },
                         modifier = Modifier.weight(1f),
-                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = VerdePillbot, unfocusedBorderColor = VerdePillbot)
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = VerdePillbot,
+                            unfocusedBorderColor = VerdePillbot
+                        )
                     )
                     OutlinedTextField(
                         value = dosis,
@@ -226,7 +224,10 @@ fun FormularioManual(
                         label = { Text("Dosis") },
                         placeholder = { Text("500 mg") },
                         modifier = Modifier.weight(1f),
-                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = VerdePillbot, unfocusedBorderColor = VerdePillbot)
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = VerdePillbot,
+                            unfocusedBorderColor = VerdePillbot
+                        )
                     )
                 }
             }
@@ -266,9 +267,14 @@ fun FormularioManual(
                             label = { Text("Frecuencia") },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                             modifier = Modifier.menuAnchor().fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = VerdePillbot, unfocusedBorderColor = VerdePillbot)
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = VerdePillbot,
+                                unfocusedBorderColor = VerdePillbot
+                            )
                         )
-                        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }) {
                             frecuencias.forEach { opcion ->
                                 DropdownMenuItem(
                                     text = { Text(opcion) },
@@ -287,7 +293,10 @@ fun FormularioManual(
                         label = { Text("Unidades") },
                         placeholder = { Text("1 tableta") },
                         modifier = Modifier.weight(1f),
-                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = VerdePillbot, unfocusedBorderColor = VerdePillbot)
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = VerdePillbot,
+                            unfocusedBorderColor = VerdePillbot
+                        )
                     )
                 }
             }
@@ -325,7 +334,10 @@ fun FormularioManual(
                         )
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = VerdePillbot, unfocusedBorderColor = VerdePillbot)
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = VerdePillbot,
+                        unfocusedBorderColor = VerdePillbot
+                    )
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -340,7 +352,10 @@ fun FormularioManual(
                         label = { Text("Inicio") },
                         placeholder = { Text("01/06/2026") },
                         modifier = Modifier.weight(1f),
-                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = VerdePillbot, unfocusedBorderColor = VerdePillbot)
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = VerdePillbot,
+                            unfocusedBorderColor = VerdePillbot
+                        )
                     )
                     OutlinedTextField(
                         value = fechaFin,
@@ -348,7 +363,10 @@ fun FormularioManual(
                         label = { Text("Fin") },
                         placeholder = { Text("10/06/2026") },
                         modifier = Modifier.weight(1f),
-                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = VerdePillbot, unfocusedBorderColor = VerdePillbot)
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = VerdePillbot,
+                            unfocusedBorderColor = VerdePillbot
+                        )
                     )
                 }
             }
@@ -382,7 +400,10 @@ fun FormularioManual(
                         label = { Text("Disponible") },
                         placeholder = { Text("30") },
                         modifier = Modifier.weight(1f),
-                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = VerdePillbot, unfocusedBorderColor = VerdePillbot)
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = VerdePillbot,
+                            unfocusedBorderColor = VerdePillbot
+                        )
                     )
                     OutlinedTextField(
                         value = nivelMinimo,
@@ -390,7 +411,10 @@ fun FormularioManual(
                         label = { Text("Mínimo alerta") },
                         placeholder = { Text("5") },
                         modifier = Modifier.weight(1f),
-                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = VerdePillbot, unfocusedBorderColor = VerdePillbot)
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = VerdePillbot,
+                            unfocusedBorderColor = VerdePillbot
+                        )
                     )
                 }
             }
@@ -420,7 +444,10 @@ fun FormularioManual(
                     label = { Text("Indicaciones adicionales (opcional)") },
                     placeholder = { Text("Tomar después de los alimentos") },
                     modifier = Modifier.fillMaxWidth().height(100.dp),
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = VerdePillbot, unfocusedBorderColor = VerdePillbot)
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = VerdePillbot,
+                        unfocusedBorderColor = VerdePillbot
+                    )
                 )
             }
         }
@@ -431,16 +458,21 @@ fun FormularioManual(
         Button(
             onClick = {
                 val medicamento = MedicamentoRequest(
-                    id_usuario = 1,
-                    nombre_medicamento = nombreMedicamento,
-                    gramaje_medicamento = dosis,
-                    inventario_inicial = cantidadDisponible.toIntOrNull() ?: 0,
-                    descripcion = observaciones
+                    idCategoria = 2,
+                    nombreComercial = nombreMedicamento.trim(),
+                    principioActivo = nombreMedicamento.trim(),
+                    idPresentacion = 1,
+                    idUnidadMedida = 1,
+                    gramaje = dosis.trim(),
+                    fabricante = "Genérico",
+                    requiereReceta = false,
+                    idUsuario = 5
                 )
 
-                viewModel.guardarMedicamento(
-                    medicamento = medicamento,
-                    onSuccess = { medicamentoCreado ->
+                // Cambiado de: { exito: Boolean -> ... }
+                // Cambiado a: { exito, idMedicamientoCreado -> ... }
+                viewModel.guardarMedicamento(medicamento) { exito: Boolean, idMedicamientoCreado: Int? ->
+                    if (exito) {
                         val frecuenciaHoras = when (frecuenciaSeleccionada) {
                             "Cada 4 horas" -> 4
                             "Cada 6 horas" -> 6
@@ -450,10 +482,10 @@ fun FormularioManual(
                             else -> 24
                         }
 
-                        // Corregido a 'dias_tratamiento' nativo en español para el modelo de datos
                         val recordatorio = RecordatorioRequest(
-                            id_usuario = 1,
-                            id_medicamento = medicamentoCreado.id_medicamento,
+                            id_usuario = 5,
+                            id_medicamento = idMedicamientoCreado
+                                ?: 0, // Usamos el ID devuelto por el servidor
                             hora_toma = horaPrimeraToma,
                             frecuencia_horas = frecuenciaHoras,
                             dosis = unidades,
@@ -465,7 +497,7 @@ fun FormularioManual(
                             onSuccess = { onNavTabClick("inventario") }
                         )
                     }
-                )
+                }
             },
             modifier = Modifier.fillMaxWidth(0.7f).height(48.dp),
             shape = RoundedCornerShape(8.dp),

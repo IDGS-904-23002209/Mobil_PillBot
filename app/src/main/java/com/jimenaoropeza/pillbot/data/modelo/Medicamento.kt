@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 data class Medicamento(
     @SerializedName("idMedicamento")
-    val id_medicamento: Int,
+    val idMedicamento: Int,
 
     @SerializedName("nombreComercial")
     val nombre_medicamento: String,

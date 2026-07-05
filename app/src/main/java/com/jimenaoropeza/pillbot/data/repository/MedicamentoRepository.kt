@@ -6,7 +6,7 @@ import com.jimenaoropeza.pillbot.modelo.MedicamentoRequest
 import com.jimenaoropeza.pillbot.modelo.InventarioMedicamentoRequest
 import com.jimenaoropeza.pillbot.modelo.TipoPresentacion
 import com.jimenaoropeza.pillbot.network.RetrofitInstance
-import com.jimenaoropeza.pillbot.network.RespuestaServidor
+import com.jimenaoropeza.pillbot.network.RespuestaServidor // O la clase que maneje el objeto {"mensaje": "..."}
 import retrofit2.Response
 
 class MedicamentoRepository {
@@ -21,7 +21,7 @@ class MedicamentoRepository {
 
     suspend fun registrarMedicamento(
         medicamento: MedicamentoRequest
-    ): Medicamento {
+    ): Response<MedicamentoRequest> {
         return api.registrarMedicamento(medicamento)
     }
 
@@ -45,7 +45,4 @@ class MedicamentoRepository {
 
     suspend fun obtenerUnidadesMedida() =
         api.obtenerUnidadesMedida()
-
-
-
 }

@@ -3,11 +3,21 @@ package com.jimenaoropeza.pillbot.modelo
 import com.google.gson.annotations.SerializedName
 
 data class MedicamentoRequest(
-    val id_usuario: Int,
-    val nombre_medicamento: String,
-    val gramaje_medicamento: String,
-    val inventario_inicial: Int,
-    val descripcion: String
+    val idTratamiento: Int = 0,
+    val idMedicamento: Int = 0,
+    val nombreComercial: String,
+    val principioActivo: String,
+    val cantidadActualPastillas: Int = 0,
+    val numeroCompartimento: Int = 0,
+    val estadoCompartimento: String = "",
+    val idCategoria: Int,
+    val idPresentacion: Int,
+    val idUnidadMedida: Int,
+    val gramaje: String,
+    val fabricante: String,
+    val requiereReceta: Boolean,
+    val activo: Boolean = true,
+    val idUsuario: Int
 )
 
 data class InventarioMedicamentoRequest(
@@ -26,8 +36,6 @@ data class InventarioMedicamentoRequest(
     @SerializedName("precio")
     val precio: Double
 )
-
-// ... (Tus clases existentes quedan igual)
 
 data class CatalogoMedicamentoRequest(
     @SerializedName("nombreComercial")
@@ -57,3 +65,4 @@ data class CatalogoMedicamentoRequest(
     @SerializedName("activo")
     val activo: Boolean = true
 )
+

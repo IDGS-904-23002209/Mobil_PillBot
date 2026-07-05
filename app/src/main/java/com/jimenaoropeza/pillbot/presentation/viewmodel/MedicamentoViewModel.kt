@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import android.util.Log
 import com.jimenaoropeza.pillbot.modelo.CatalogoMedicamentoRequest
+import com.jimenaoropeza.pillbot.network.ApiService
 
 class MedicamentoViewModel : ViewModel() {
 
@@ -24,22 +25,6 @@ class MedicamentoViewModel : ViewModel() {
 
     // Estado para controlar si el guardado en inventario fue exitoso
     var registroExitoso = mutableStateOf(false)
-
-
-    fun guardarMedicamento(
-        medicamento: MedicamentoRequest,
-        onSuccess: (Medicamento) -> Unit = {}
-    ) {
-        viewModelScope.launch {
-            try {
-                val medicamentoCreado = repository.registrarMedicamento(medicamento)
-                cargarMedicamentos(usuarioId = medicamento.id_usuario)
-                onSuccess(medicamentoCreado)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
 
     fun registrarEnInventario(
         inventarioRequest: InventarioMedicamentoRequest,
@@ -84,7 +69,6 @@ class MedicamentoViewModel : ViewModel() {
         viewModelScope.launch {
 
             try {
-
                 val respuesta = repository.registrarMedicamentoCatalogo(request)
 
                 if (respuesta.isSuccessful) {
@@ -118,6 +102,24 @@ class MedicamentoViewModel : ViewModel() {
 
             }
 
+        }
+    }
+
+
+    fun guardarMedicamento(medicamento: MedicamentoRequest, onResultado: (Boolean, Int?) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = repository.registrarMedicamento(medicamento)
+                if (response.isSuccessful && response.body() != null) {
+                    val idGenerado = response.body()?.idMedicamento
+                    onResultado(true, idGenerado)
+                } else {
+                    onResultado(false, null)
+                }
+            } catch (e: Exception) {
+                Log.e("MEDICAMENTOS_API", "Error al guardar: ${e.message}")
+                onResultado(false, null)
+            }
         }
     }
 

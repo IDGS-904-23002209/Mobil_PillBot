@@ -23,8 +23,6 @@ import com.jimenaoropeza.pillbot.pantallas.*
 import com.jimenaoropeza.pillbot.presentation.screens.Notificaciones
 import com.jimenaoropeza.pillbot.viewmodel.MedicamentoViewModel
 import com.jimenaoropeza.pillbot.viewmodel.RecordatorioViewModel
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,9 +31,7 @@ fun PillBotNavigation(
     usuarioIdInicial: Int,
     tomaHoyViewModel: TomaHoyViewModel = viewModel()
 ) {
-    // =========================================================================
-    // INSTANCIACIÓN DE VIEWMODELS (Solución a errores de compilación)
-    // =========================================================================
+    // INSTANCIACIÓN DE VIEWMODELS
     val medicamentoViewModel: MedicamentoViewModel = viewModel()
     val recordatorioViewModel: RecordatorioViewModel = viewModel()
 
@@ -51,15 +47,14 @@ fun PillBotNavigation(
     val tomasHoy by tomaHoyViewModel.tomasHoy
     val tomasPendientes = tomasHoy.count { !it.tomado }
 
-    // Centralización limpia de rutas nativas vinculadas al BottomBar usando Screen
+    // LISTA DE RUTAS CORREGIDA (Se eliminó "formulario" y se alineó con los iconos)
     val routes = listOf(
-        Screen.Inicio.route,
-        "formulario",
-        Screen.Notificaciones.route,
-        "inventario",
-        Screen.Calendario.route,
-        "controlEmergencia",
-        Screen.Perfil.route
+        Screen.Inicio.route,            // Índice 0
+        Screen.Notificaciones.route,    // Índice 1
+        "historialMedicamento",        // Índice 2
+        Screen.Calendario.route,        // Índice 3
+        "controlEmergencia",           // Índice 4
+        Screen.Perfil.route            // Índice 5
     )
 
     // Determina si se deben ocultar los componentes corporativos en flujos de autenticación
@@ -76,14 +71,14 @@ fun PillBotNavigation(
                     containerColor = Color(0xFFF1F1F1),
                     tonalElevation = 4.dp
                 ) {
+                    // LISTA DE ICONOS (6 iconos correlativos a las 6 rutas de arriba)
                     val navIcons = listOf(
-                        R.drawable.ic_inicio,
-                        R.drawable.ic_formulario,
-                        R.drawable.ic_notificacion,
-                        R.drawable.ic_inventario,
-                        R.drawable.ic_calendario,
-                        R.drawable.ic_emergencia,
-                        R.drawable.ic_perfil
+                        R.drawable.ic_inicio,                  // Índice 0 -> Inicio
+                        R.drawable.ic_notificacion,            // Índice 1 -> Notificaciones
+                        R.drawable.ic_historialmedicamentos,   // Índice 2 -> Historial / Inventario
+                        R.drawable.ic_calendario,              // Índice 3 -> Calendario
+                        R.drawable.ic_emergencia,              // Índice 4 -> Control Emergencia
+                        R.drawable.ic_perfil                   // Índice 5 -> Perfil
                     )
 
                     navIcons.forEachIndexed { index, iconRes ->
@@ -108,8 +103,9 @@ fun PillBotNavigation(
                                         contentDescription = null,
                                         modifier = Modifier.size(32.dp)
                                     )
-                                    // Globo de alertas dinámico basado en tu base de datos
-                                    if (index == 2 && tomasPendientes > 0) {
+
+                                    // CORRECCIÓN: El globo ahora se muestra en el Índice 1 (Notificaciones / Campanita)
+                                    if (index == 1 && tomasPendientes > 0) {
                                         Box(
                                             modifier = Modifier
                                                 .size(16.dp)
@@ -171,9 +167,7 @@ fun PillBotNavigation(
             // Enrutador Principal del Sistema Móvil
             NavHost(
                 navController = navController,
-                //linea cambiada temporalmente
-                // startDestination = "inventario",
-                startDestination = Screen.Inicio.route,
+                startDestination = Screen.Login.route,
                 modifier = Modifier.weight(1f)
             ) {
                 // Pantalla: Login
@@ -211,28 +205,8 @@ fun PillBotNavigation(
                     )
                 }
 
-                // Pantalla: Selección de Formulario (Cámara / Manual)
-                composable(route = "formulario") {
-                    FormularioMedicamento(
-                        currentScreen = "formulario",
-                        totalNoLeidas = tomasPendientes,
-                        onNavTabClick = { ruta -> navController.navigate(ruta) },
-                        viewModel = medicamentoViewModel
-                    )
-                }
-
-                /* Pantalla: Formulario Manual Detallado (Descomentado para habilitar uso seguro)
-                composable(route = "formularioManual") {
-                    FormularioManual(
-                        currentScreen = "formularioManual",
-                        onNavTabClick = { ruta -> navController.navigate(ruta) },
-                        viewModel = medicamentoViewModel,
-                        recordatorioViewModel = recordatorioViewModel
-                    )
-                }*/
-
                 // Pantalla: Inventario de Medicamentos
-                composable(route = "inventario") {
+                composable(route = "historialMedicamento") {
                     val listaMedicamentos by medicamentoViewModel.medicamentos
 
                     LaunchedEffect(usuarioIdInicial) {
@@ -292,31 +266,19 @@ fun PillBotNavigation(
                     )
                 }
 
-                // Pantalla: Registro Alternativo de Fármacos
-                composable(route = "agregarMedicamento") {
-                    AgregarMedicamento(
-                        onVolver = { navController.popBackStack() }
-                    )
-                }
-
                 // Pantalla: Recargar stock de Medicamento
                 composable(route = "recargarMedicamento") {
-
                     val medicamentoSeleccionado = medicamentoViewModel.medicamentoSeleccionado
-
                     if (medicamentoSeleccionado != null) {
-
                         RecargarMedicamento(
                             medicamento = medicamentoSeleccionado,
                             onVolver = { navController.popBackStack() }
                         )
-
                     } else {
-
                         navController.popBackStack()
-
                     }
                 }
+
                 // Pantalla: Perfil de Configuración de Usuario
                 composable(route = Screen.Perfil.route) {
                     ConfiguracionPerfil(
@@ -329,11 +291,9 @@ fun PillBotNavigation(
                     )
                 }
 
-                composable(route = Screen.Tratamiento.route) {
-                    Tratamiento(
-                        onVolver = { navController.popBackStack() }
-                    )
-                }
+                composable(route = "restaurar") {}
+                composable(route = "verificar") {}
+                composable(route = "restablecer") {}
             }
         }
     }

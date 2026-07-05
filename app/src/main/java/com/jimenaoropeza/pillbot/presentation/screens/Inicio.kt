@@ -27,19 +27,17 @@ import java.util.Locale
 
 @Composable
 fun Inicio(
-    usuarioId: Int,                       // <-- Sincronizado con NavController
-    currentScreen: String = "inicio",     // <-- Agregado para cumplir los requisitos de firma del Nav
-    onNavTabClick: (String) -> Unit = {}, // <-- Agregado para cumplir los requisitos de firma del Nav
-    onIrANotificaciones: () -> Unit,       // <-- Sincronizado con NavController
-    onIrACalendario: () -> Unit,           // <-- Sincronizado con NavController
+    usuarioId: Int,
+    currentScreen: String = "inicio",
+    onNavTabClick: (String) -> Unit = {},
+    onIrANotificaciones: () -> Unit,
+    onIrACalendario: () -> Unit,
     onIrATratamiento: () -> Unit,
     viewModel: TomaHoyViewModel = viewModel(),
-    nombreUsuario: String = "Usuario"      // Por seguridad tiene un valor por defecto
+    nombreUsuario: String = "Usuario"
 ) {
-    // Escucha el estado reactivo del ViewModel de manera correcta
     val tomasHoy by viewModel.tomasHoy
 
-    // Carga los datos usando el ID del usuario autenticado dinámicamente
     LaunchedEffect(usuarioId) {
         viewModel.cargarTomasHoy(usuarioId = usuarioId)
     }
@@ -54,7 +52,6 @@ fun Inicio(
     val formateador = DateTimeFormatter.ofPattern("dd - MMM - yyyy", Locale("es", "MX"))
     val fechaFormateada = hoy.format(formateador)
 
-    // Eliminamos Scaffold e insertamos directamente la vista con scroll dinámico
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -63,7 +60,6 @@ fun Inicio(
             .padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Un espacio pequeño desde el header común de "PILLBOT"
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
@@ -93,23 +89,11 @@ fun Inicio(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             Text(
-                text = "$tomasPendientes medicamento(s) pendiente(s)",
+                text = "$tomasPendientes medicamentos pendientes",
                 fontSize = 18.sp,
                 color = Color.Black
             )
-
-            IconButton(
-                onClick = onIrATratamiento
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_tratamiento),
-                    contentDescription = "Tratamiento",
-                    modifier = Modifier.size(34.dp)
-                )
-            }
-
         }
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -129,7 +113,7 @@ fun Inicio(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 LinearProgressIndicator(
-                    progress = progreso,
+                    progress = { progreso },
                     modifier = Modifier.fillMaxWidth().height(10.dp),
                     color = Color(0xFF59CBA2),
                     trackColor = Color.White.copy(alpha = 0.5f)
@@ -162,8 +146,6 @@ fun Inicio(
                 Spacer(modifier = Modifier.height(12.dp))
             }
         }
-
-        // Espaciador final para evitar que la barra inferior tape el último elemento
         Spacer(modifier = Modifier.height(80.dp))
     }
 }

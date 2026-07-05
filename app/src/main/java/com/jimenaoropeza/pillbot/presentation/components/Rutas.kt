@@ -9,11 +9,10 @@ sealed class Screen(val route: String) {
     object Perfil : Screen("perfil")
 
     object Formulario : Screen("formulario")
-    object Inventario : Screen("inventario")
+    object HistorialMedicamento : Screen("historialMedicamento")
     object ControlEmergencia : Screen("controlEmergencia")
 
     object DetalleMedicamento : Screen("detalleMedicamento")
-    object AgregarMedicamento : Screen("agregarMedicamento")
     object RecargarMedicamento : Screen("recargarMedicamento")
 
     object Tratamiento : Screen("tratamiento")
