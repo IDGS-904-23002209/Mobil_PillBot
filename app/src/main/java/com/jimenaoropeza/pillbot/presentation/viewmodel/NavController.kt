@@ -21,6 +21,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.jimenaoropeza.pillbot.R
 import com.jimenaoropeza.pillbot.pantallas.*
 import com.jimenaoropeza.pillbot.presentation.screens.Notificaciones
+import com.jimenaoropeza.pillbot.presentation.screens.RegistrarTratamiento
 import com.jimenaoropeza.pillbot.viewmodel.MedicamentoViewModel
 import com.jimenaoropeza.pillbot.viewmodel.RecordatorioViewModel
 
@@ -167,7 +168,7 @@ fun PillBotNavigation(
             // Enrutador Principal del Sistema Móvil
             NavHost(
                 navController = navController,
-                startDestination = Screen.Login.route,
+                startDestination = Screen.Inicio.route,
                 modifier = Modifier.weight(1f)
             ) {
                 // Pantalla: Login
@@ -200,6 +201,9 @@ fun PillBotNavigation(
                         onIrACalendario = { navController.navigate(Screen.Calendario.route) },
                         onIrATratamiento = {
                             navController.navigate(Screen.Tratamiento.route)
+                        },
+                        onIrAProgramacion = {
+                            navController.navigate(Screen.ProgramacionTratamiento.route)
                         },
                         viewModel = tomaHoyViewModel
                     )
@@ -280,6 +284,18 @@ fun PillBotNavigation(
                 }
 
                 // Pantalla: Perfil de Configuración de Usuario
+// Pantalla: Programación del Tratamiento
+                composable(route = Screen.ProgramacionTratamiento.route) {
+                    RegistrarTratamiento(
+                        onVolver = {
+                            navController.popBackStack()
+                        },
+                        onGuardadoExitoso = {
+                            navController.popBackStack()
+                        }
+                    )
+                }
+
                 composable(route = Screen.Perfil.route) {
                     ConfiguracionPerfil(
                         usuarioId = usuarioIdInicial,

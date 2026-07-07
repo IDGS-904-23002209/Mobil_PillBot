@@ -24,6 +24,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import androidx.compose.foundation.clickable
 
 @Composable
 fun Inicio(
@@ -33,6 +34,7 @@ fun Inicio(
     onIrANotificaciones: () -> Unit,
     onIrACalendario: () -> Unit,
     onIrATratamiento: () -> Unit,
+    onIrAProgramacion: () -> Unit,
     viewModel: TomaHoyViewModel = viewModel(),
     nombreUsuario: String = "Usuario"
 ) {
@@ -77,23 +79,43 @@ fun Inicio(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Text(
-            text = "Hoy, $fechaFormateada",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color.Black,
-            modifier = Modifier.align(Alignment.Start)
-        )
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+
+            Text(
+                text = "Hoy, $fechaFormateada",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.Black
+            )
+
+            Image(
+                painter = painterResource(R.drawable.ic_programacion),
+                contentDescription = "Programación",
+                modifier = Modifier
+                    .size(34.dp)
+                    .clickable {
+                        onIrAProgramacion()
+                    }
+            )
+
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
             Text(
                 text = "$tomasPendientes medicamentos pendientes",
                 fontSize = 18.sp,
                 color = Color.Black
             )
+
         }
 
         Spacer(modifier = Modifier.height(20.dp))

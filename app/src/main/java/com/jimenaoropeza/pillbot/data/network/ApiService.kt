@@ -1,5 +1,8 @@
 package com.jimenaoropeza.pillbot.network
 
+import com.jimenaoropeza.pillbot.data.modelo.CompartimentoRequest
+import com.jimenaoropeza.pillbot.data.modelo.DetalleRecetaCompletoRequest
+import com.jimenaoropeza.pillbot.data.modelo.DetalleRecetaRequest
 import com.jimenaoropeza.pillbot.modelo.Medicamento
 import com.jimenaoropeza.pillbot.modelo.MedicamentoRequest
 import com.jimenaoropeza.pillbot.modelo.RecordatorioRequest
@@ -15,16 +18,21 @@ import com.jimenaoropeza.pillbot.modelo.InventarioMedicamentoRequest
 import com.jimenaoropeza.pillbot.modelo.TipoPresentacion
 import com.jimenaoropeza.pillbot.modelo.UnidadMedida
 import com.jimenaoropeza.pillbot.data.modelo.Tratamiento
+import com.jimenaoropeza.pillbot.modelo.ProgramacionTratamientoRequest
 
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 // Puedes conservar esta si tus otros endpoints la usan para respuestas genéricas
 data class RespuestaServidor(
-    val mensaje: String
+
+    val mensaje: String,
+    val idProgramacion: Int? = null
 )
 
 interface ApiService {
@@ -87,4 +95,35 @@ interface ApiService {
     suspend fun registrarTratamiento(
         @Body tratamiento: Tratamiento
     ): Response<RespuestaServidor>
+
+    @POST("api/programacionTratamientos")
+    suspend fun registrarProgramacion(
+        @Body programacion: ProgramacionTratamientoRequest
+    ): Response<RespuestaServidor>
+
+    @PUT("api/programacionTratamientos/{id_programacion}")
+    suspend fun actualizarProgramacion(
+        @Path("id_programacion") idProgramacion: Int,
+        @Body programacion: ProgramacionTratamientoRequest
+    ): Response<RespuestaServidor>
+
+    @GET("api/programacionTratamientos")
+    suspend fun consultarTodos(): List<ProgramacionTratamientoRequest>
+
+    // Endpoint Compartimentos: api/compartimentos
+    @GET("api/compartimentos")
+    suspend fun obtenerCompartimentos(): List<CompartimentoRequest>
+
+    // Endpoint DetalleReceta: api/detalleReceta/receta/{id_receta}
+    @GET("api/detalleReceta/receta/{id_receta}")
+    suspend fun consultarDetallesPorReceta(
+        @Path("id_receta") idReceta: Int
+    ): Response<List<DetalleRecetaRequest>>
+
+    // soloDisponibles = true  (default) -> excluye los que ya tienen tratamiento (para Registrar)
+// soloDisponibles = false           -> trae TODOS (para Editar)
+    @GET("api/detalleReceta/completo")
+    suspend fun obtenerDetallesRecetaCompletos(
+        @Query("soloDisponibles") soloDisponibles: Boolean = true
+    ): List<DetalleRecetaCompletoRequest>
 }
