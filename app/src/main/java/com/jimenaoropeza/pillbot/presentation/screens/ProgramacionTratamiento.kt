@@ -59,12 +59,14 @@ import com.jimenaoropeza.pillbot.modelo.ProgramacionTratamientoRequest
 import com.jimenaoropeza.pillbot.presentation.viewmodel.CompartimentoViewModel
 import com.jimenaoropeza.pillbot.presentation.viewmodel.DetalleRecetaCompletoViewModel
 import com.jimenaoropeza.pillbot.presentation.viewmodel.ProgramacionViewModel
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 
 private val COLOR_PRINCIPAL = Color(0xFF59CBA2)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistrarTratamiento(
+    usuarioId: Int,   // NUEVO
     onVolver: () -> Unit,
     onGuardadoExitoso: () -> Unit = onVolver
 ) {
@@ -80,8 +82,24 @@ fun RegistrarTratamiento(
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
+        // ---- Flecha para volver al inicio ---- NUEVO
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onVolver) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Volver al inicio",
+                    tint = COLOR_PRINCIPAL
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+
         SeccionRegistrarTratamiento(
             context = context,
+            usuarioId = usuarioId,   // NUEVO
             programacionViewModel = programacionViewModel,
             detalleRecetaViewModel = detalleRecetaViewModel,
             compartimentoViewModel = compartimentoViewModel,
@@ -92,6 +110,7 @@ fun RegistrarTratamiento(
 
         SeccionTablaYEditarTratamientos(
             context = context,
+            usuarioId = usuarioId,   // NUEVO
             programacionViewModel = programacionViewModel,
             detalleRecetaViewModel = detalleRecetaViewModel,
             compartimentoViewModel = compartimentoViewModel,
@@ -107,6 +126,8 @@ fun RegistrarTratamiento(
 @Composable
 private fun SeccionRegistrarTratamiento(
     context: android.content.Context,
+    usuarioId: Int,   // NUEVO
+
     programacionViewModel: ProgramacionViewModel,
     detalleRecetaViewModel: DetalleRecetaCompletoViewModel,
     compartimentoViewModel: CompartimentoViewModel,
@@ -122,7 +143,7 @@ private fun SeccionRegistrarTratamiento(
     // soloDisponibles = true -> NO muestra detalle_receta que ya tienen tratamiento
     LaunchedEffect(formularioAbierto) {
         if (formularioAbierto) {
-            detalleRecetaViewModel.cargarTodosLosDetalles(soloDisponibles = true) { mensaje ->
+            detalleRecetaViewModel.cargarTodosLosDetalles(soloDisponibles = true, idUsuario = usuarioId) { mensaje ->
                 Toast.makeText(context, "Detalle receta: $mensaje", Toast.LENGTH_LONG).show()
             }
             compartimentoViewModel.cargarCompartimentos { mensaje ->
@@ -268,6 +289,7 @@ private fun SeccionRegistrarTratamiento(
 @Composable
 private fun SeccionTablaYEditarTratamientos(
     context: android.content.Context,
+    usuarioId: Int,   // NUEVO
     programacionViewModel: ProgramacionViewModel,
     detalleRecetaViewModel: DetalleRecetaCompletoViewModel,
     compartimentoViewModel: CompartimentoViewModel,
@@ -283,8 +305,8 @@ private fun SeccionTablaYEditarTratamientos(
     // Se cargan los datos apenas se muestra la pantalla (no hace falta abrir nada).
     // soloDisponibles = false para poder mostrar/editar el detalle_receta ya asignado.
     LaunchedEffect(Unit) {
-        programacionViewModel.cargarTratamientos()
-        detalleRecetaViewModel.cargarTodosLosDetalles(soloDisponibles = false) { mensaje ->
+        programacionViewModel.cargarTratamientos(usuarioId)   // <-- se agrega el parámetro
+        detalleRecetaViewModel.cargarTodosLosDetalles(soloDisponibles = false, idUsuario = usuarioId) { mensaje ->
             Toast.makeText(context, "Detalle receta: $mensaje", Toast.LENGTH_LONG).show()
         }
         compartimentoViewModel.cargarCompartimentos { mensaje ->
@@ -329,8 +351,9 @@ private fun SeccionTablaYEditarTratamientos(
                 ) {
                     // ---- Encabezado ----
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Detalle", modifier = Modifier.width(70.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("N° Trat.", modifier = Modifier.width(70.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp) // antes: "Detalle"
                         Text("Compart.", modifier = Modifier.width(80.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("Peso (g)", modifier = Modifier.width(70.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)   // NUEVO
                         Text("Hora inicio", modifier = Modifier.width(90.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         Text("Día inicio", modifier = Modifier.width(100.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         Text("Día fin", modifier = Modifier.width(100.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
@@ -349,19 +372,25 @@ private fun SeccionTablaYEditarTratamientos(
                     // ---- Renglones ----
                     tratamientosActivos.forEach { tratamiento ->
                         val compartimento = compartimentos.find { it.idCompartimento == tratamiento.idCompartimento }
+                        val detalleInfo = detalles.find { it.idDetalleReceta == tratamiento.idDetalleReceta }   // NUEVO
 
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = tratamiento.idDetalleReceta?.toString() ?: "-",
+                                text = detalleInfo?.numeroTratamiento?.toString() ?: "-",   // antes: tratamiento.idDetalleReceta?.toString() ?: "-"
                                 modifier = Modifier.width(70.dp),
                                 fontSize = 13.sp
                             )
                             Text(
-                                text = compartimento?.numeroCompartimento?.toString()
-                                    ?: tratamiento.idCompartimento?.toString() ?: "-",
+                                text = compartimento?.numeroCompartimento?.toString() ?: tratamiento.idCompartimento?.toString() ?: "-",
                                 modifier = Modifier.width(80.dp),
                                 fontSize = 13.sp
                             )
+                            Text(
+                                text = tratamiento.pesoEsperadoGramos?.toString() ?: "-",   // NUEVO
+                                modifier = Modifier.width(70.dp),
+                                fontSize = 13.sp
+                            )
+                            // ... el resto del renglón queda exactamente igual
                             Text(
                                 text = tratamiento.horaInicio ?: "-",
                                 modifier = Modifier.width(90.dp),
@@ -486,7 +515,10 @@ private fun FormularioEditarTratamiento(
             // ---- Detalle del tratamiento: FIJO, no editable ----
             Text("Detalle del tratamiento (no editable)", fontSize = 12.sp, color = Color.Gray)
             Spacer(modifier = Modifier.height(6.dp))
-            CampoSoloLectura(etiqueta = "Id detalle receta", valor = tratamiento.idDetalleReceta?.toString() ?: "-")
+            CampoSoloLectura(
+                etiqueta = "Número de tratamiento",                                          // antes: "Id detalle receta"
+                valor = detalleFijo?.numeroTratamiento?.toString() ?: "-"                    // antes: tratamiento.idDetalleReceta?.toString() ?: "-"
+            )
 
             if (detalleFijo != null) {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -730,10 +762,10 @@ private fun CamposTratamiento(
         onExpandedChange = { expandedDetalle = it }
     ) {
         OutlinedTextField(
-            value = detalleSeleccionado?.idDetalleReceta?.toString() ?: "",
+            value = detalleSeleccionado?.numeroTratamiento?.toString() ?: "",   // antes: idDetalleReceta
             onValueChange = {},
             readOnly = true,
-            placeholder = { Text("Selecciona un id_detalle_receta") },
+            placeholder = { Text("Selecciona un número de tratamiento") },       // texto actualizado
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDetalle) },
             modifier = Modifier.fillMaxWidth().menuAnchor(),
             shape = RoundedCornerShape(12.dp),
@@ -756,9 +788,9 @@ private fun CamposTratamiento(
             } else {
                 detalles.forEach { detalle ->
                     DropdownMenuItem(
-                        text = { Text(detalle.idDetalleReceta.toString()) },
+                        text = { Text(detalle.numeroTratamiento?.toString() ?: "-") },   // antes: idDetalleReceta.toString()
                         onClick = {
-                            onDetalleSeleccionado(detalle)
+                            onDetalleSeleccionado(detalle)   // esto NO cambia: sigue guardando por idDetalleReceta
                             expandedDetalle = false
                         }
                     )

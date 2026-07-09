@@ -7,7 +7,7 @@ class DetalleRecetaCompletoRepository {
 
     private val api = RetrofitInstance.api
 
-    suspend fun obtenerDetallesCompletos(soloDisponibles: Boolean = true): List<DetalleRecetaCompletoRequest> {
-        return api.obtenerDetallesRecetaCompletos(soloDisponibles)
+    suspend fun obtenerDetallesCompletos(soloDisponibles: Boolean = true, idUsuario: Int): List<DetalleRecetaCompletoRequest> {
+        return api.obtenerDetallesRecetaCompletos(soloDisponibles, idUsuario)
     }
 }

@@ -168,7 +168,7 @@ fun PillBotNavigation(
             // Enrutador Principal del Sistema Móvil
             NavHost(
                 navController = navController,
-                startDestination = Screen.Inicio.route,
+                startDestination = Screen.Login.route,
                 modifier = Modifier.weight(1f)
             ) {
                 // Pantalla: Login
@@ -287,6 +287,7 @@ fun PillBotNavigation(
 // Pantalla: Programación del Tratamiento
                 composable(route = Screen.ProgramacionTratamiento.route) {
                     RegistrarTratamiento(
+                        usuarioId = usuarioIdInicial,   // NUEVO
                         onVolver = {
                             navController.popBackStack()
                         },

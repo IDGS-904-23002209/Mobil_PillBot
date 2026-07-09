@@ -21,11 +21,11 @@ class ProgramacionViewModel : ViewModel() {
 
     var cargando by mutableStateOf(false)
 
-    fun cargarTratamientos() {
+    fun cargarTratamientos(idUsuario: Int) {
         viewModelScope.launch {
             cargando = true
             try {
-                val lista = repository.consultarTodos()
+                val lista = repository.consultarTodos(idUsuario)
                 tratamientos.value = lista
             } catch (e: Exception) {
                 Log.e("PROGRAMACION_VM", "Error al consultar tratamientos: ${e.message}")

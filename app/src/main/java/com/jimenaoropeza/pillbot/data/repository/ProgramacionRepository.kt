@@ -22,7 +22,7 @@ class ProgramacionRepository {
         return api.actualizarProgramacion(idProgramacion, programacion)
     }
 
-    suspend fun consultarTodos(): List<ProgramacionTratamientoRequest> {
-        return api.consultarTodos()
+    suspend fun consultarTodos(idUsuario: Int): List<ProgramacionTratamientoRequest> {
+        return api.consultarTodos(idUsuario)
     }
 }

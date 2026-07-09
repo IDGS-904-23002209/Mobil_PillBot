@@ -17,12 +17,13 @@ class DetalleRecetaCompletoViewModel : ViewModel() {
 
     // soloDisponibles = true  -> para el formulario de REGISTRAR (excluye ya programados)
     // soloDisponibles = false -> para el formulario de EDITAR (trae todos)
-    fun cargarTodosLosDetalles(soloDisponibles: Boolean = true, onError: (String) -> Unit = {}) {
+    // idUsuario -> filtra por el cliente asociado al usuario logueado
+    fun cargarTodosLosDetalles(soloDisponibles: Boolean = true, idUsuario: Int, onError: (String) -> Unit = {}) {
         viewModelScope.launch {
             cargando.value = true
             try {
-                val lista = repository.obtenerDetallesCompletos(soloDisponibles)
-                Log.d("DETALLE_COMPLETO_VM", "Detalles recibidos (soloDisponibles=$soloDisponibles): ${lista.size}")
+                val lista = repository.obtenerDetallesCompletos(soloDisponibles, idUsuario)
+                Log.d("DETALLE_COMPLETO_VM", "Detalles recibidos (soloDisponibles=$soloDisponibles, idUsuario=$idUsuario): ${lista.size}")
                 detallesCompletos.value = lista
             } catch (e: Exception) {
                 Log.e("DETALLE_COMPLETO_VM", "Error al obtener detalles completos", e)

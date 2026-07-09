@@ -108,7 +108,9 @@ interface ApiService {
     ): Response<RespuestaServidor>
 
     @GET("api/programacionTratamientos")
-    suspend fun consultarTodos(): List<ProgramacionTratamientoRequest>
+    suspend fun consultarTodos(
+        @Query("idUsuario") idUsuario: Int
+    ): List<ProgramacionTratamientoRequest>
 
     // Endpoint Compartimentos: api/compartimentos
     @GET("api/compartimentos")
@@ -124,6 +126,7 @@ interface ApiService {
 // soloDisponibles = false           -> trae TODOS (para Editar)
     @GET("api/detalleReceta/completo")
     suspend fun obtenerDetallesRecetaCompletos(
-        @Query("soloDisponibles") soloDisponibles: Boolean = true
+        @Query("soloDisponibles") soloDisponibles: Boolean = true,
+        @Query("idUsuario") idUsuario: Int
     ): List<DetalleRecetaCompletoRequest>
 }

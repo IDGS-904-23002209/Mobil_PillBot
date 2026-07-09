@@ -31,5 +31,6 @@ data class DetalleRecetaCompletoRequest(
     @SerializedName("dosis") val dosis: String?,
     @SerializedName("indicaciones") val indicaciones: String?,
     @SerializedName("frecuenciaHoras") val frecuenciaHoras: Int?,
-    @SerializedName("duracionDias") val duracionDias: Int?
+    @SerializedName("duracionDias") val duracionDias: Int?,
+    @SerializedName("numeroTratamiento") val numeroTratamiento: Int?   // NUEVO
 )
