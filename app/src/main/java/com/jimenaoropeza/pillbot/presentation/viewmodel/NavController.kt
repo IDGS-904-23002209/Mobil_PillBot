@@ -35,35 +35,40 @@ fun PillBotNavigation(
     // INSTANCIACIÓN DE VIEWMODELS
     val medicamentoViewModel: MedicamentoViewModel = viewModel()
     val recordatorioViewModel: RecordatorioViewModel = viewModel()
+    val compartimentoViewModel: CompartimentoViewModel = viewModel()
 
     // Monitorea la ruta actual de navegación
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    // Efecto lanzado globalmente para actualizar el contador de notificaciones pendientes
+    // Efecto lanzado globalmente para actualizar
+    // el contador de notificaciones pendientes
     LaunchedEffect(usuarioIdInicial) {
-        tomaHoyViewModel.cargarTomasHoy(usuarioId = usuarioIdInicial)
+        tomaHoyViewModel.cargarTomasHoy(
+            usuarioId = usuarioIdInicial
+        )
     }
 
     val tomasHoy by tomaHoyViewModel.tomasHoy
     val tomasPendientes = tomasHoy.count { !it.tomado }
 
-    // LISTA DE RUTAS CORREGIDA (Se eliminó "formulario" y se alineó con los iconos)
+    // Rutas correspondientes a la barra inferior
     val routes = listOf(
-        Screen.Inicio.route,            // Índice 0
-        Screen.Notificaciones.route,    // Índice 1
-        "historialMedicamento",        // Índice 2
-        Screen.Calendario.route,        // Índice 3
-        "controlEmergencia",           // Índice 4
-        Screen.Perfil.route            // Índice 5
+        Screen.Inicio.route,
+        Screen.Notificaciones.route,
+        "historialMedicamento",
+        Screen.Calendario.route,
+        "controlEmergencia",
+        Screen.Perfil.route
     )
 
-    // Determina si se deben ocultar los componentes corporativos en flujos de autenticación
-    val mostrarBarrasGlobales = currentRoute != Screen.Login.route &&
-            currentRoute != "registrarse" &&
-            currentRoute != "restaurar" &&
-            currentRoute != "verificar" &&
-            currentRoute != "restablecer"
+    // Determina si se deben mostrar las barras generales
+    val mostrarBarrasGlobales =
+        currentRoute != Screen.Login.route &&
+                currentRoute != "registrarse" &&
+                currentRoute != "restaurar" &&
+                currentRoute != "verificar" &&
+                currentRoute != "restablecer"
 
     Scaffold(
         bottomBar = {
@@ -72,245 +77,475 @@ fun PillBotNavigation(
                     containerColor = Color(0xFFF1F1F1),
                     tonalElevation = 4.dp
                 ) {
-                    // LISTA DE ICONOS (6 iconos correlativos a las 6 rutas de arriba)
                     val navIcons = listOf(
-                        R.drawable.ic_inicio,                  // Índice 0 -> Inicio
-                        R.drawable.ic_notificacion,            // Índice 1 -> Notificaciones
-                        R.drawable.ic_historialmedicamentos,   // Índice 2 -> Historial / Inventario
-                        R.drawable.ic_calendario,              // Índice 3 -> Calendario
-                        R.drawable.ic_emergencia,              // Índice 4 -> Control Emergencia
-                        R.drawable.ic_perfil                   // Índice 5 -> Perfil
+                        R.drawable.ic_inicio,
+                        R.drawable.ic_notificacion,
+                        R.drawable.ic_historialmedicamentos,
+                        R.drawable.ic_calendario,
+                        R.drawable.ic_emergencia,
+                        R.drawable.ic_perfil
                     )
 
                     navIcons.forEachIndexed { index, iconRes ->
-                        val routeTarget = routes.getOrNull(index) ?: Screen.Inicio.route
-                        val isSelected = currentRoute == routeTarget
+
+                        val routeTarget =
+                            routes.getOrNull(index)
+                                ?: Screen.Inicio.route
+
+                        val isSelected =
+                            currentRoute == routeTarget
 
                         NavigationBarItem(
                             selected = isSelected,
+
                             onClick = {
                                 if (currentRoute != routeTarget) {
                                     navController.navigate(routeTarget) {
-                                        popUpTo(Screen.Inicio.route) { saveState = true }
+                                        popUpTo(Screen.Inicio.route) {
+                                            saveState = true
+                                        }
+
                                         launchSingleTop = true
                                         restoreState = true
                                     }
                                 }
                             },
+
                             icon = {
-                                Box(modifier = Modifier.wrapContentSize()) {
+                                Box(
+                                    modifier = Modifier.wrapContentSize()
+                                ) {
                                     Image(
-                                        painter = painterResource(id = iconRes),
+                                        painter = painterResource(
+                                            id = iconRes
+                                        ),
                                         contentDescription = null,
                                         modifier = Modifier.size(32.dp)
                                     )
 
-                                    // CORRECCIÓN: El globo ahora se muestra en el Índice 1 (Notificaciones / Campanita)
-                                    if (index == 1 && tomasPendientes > 0) {
+                                    if (
+                                        index == 1 &&
+                                        tomasPendientes > 0
+                                    ) {
                                         Box(
                                             modifier = Modifier
                                                 .size(16.dp)
-                                                .background(Color.Red, shape = RoundedCornerShape(8.dp))
-                                                .align(Alignment.TopEnd),
-                                            contentAlignment = Alignment.Center
+                                                .background(
+                                                    Color.Red,
+                                                    shape = RoundedCornerShape(
+                                                        8.dp
+                                                    )
+                                                )
+                                                .align(
+                                                    Alignment.TopEnd
+                                                ),
+                                            contentAlignment =
+                                                Alignment.Center
                                         ) {
                                             Text(
-                                                text = tomasPendientes.toString(),
+                                                text =
+                                                    tomasPendientes.toString(),
                                                 color = Color.White,
                                                 fontSize = 9.sp,
-                                                fontWeight = FontWeight.Bold
+                                                fontWeight =
+                                                    FontWeight.Bold
                                             )
                                         }
                                     }
                                 }
                             },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = if (isSelected) Color(0xFF59CBA2).copy(alpha = 0.3f) else Color.Transparent
-                            )
+
+                            colors =
+                                NavigationBarItemDefaults.colors(
+                                    indicatorColor =
+                                        if (isSelected) {
+                                            Color(0xFF59CBA2)
+                                                .copy(alpha = 0.3f)
+                                        } else {
+                                            Color.Transparent
+                                        }
+                                )
                         )
                     }
                 }
             }
         }
     ) { paddingValues ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White)
                 .padding(paddingValues)
         ) {
-            // Header Corporativo superior unificado
+
+            // Encabezado superior de PillBot
             if (mostrarBarrasGlobales) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment =
+                        Alignment.CenterHorizontally
                 ) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Spacer(
+                        modifier = Modifier.height(16.dp)
+                    )
+
+                    Row(
+                        verticalAlignment =
+                            Alignment.CenterVertically
+                    ) {
                         Image(
-                            painter = painterResource(R.drawable.logopastillero),
+                            painter = painterResource(
+                                R.drawable.logopastillero
+                            ),
                             contentDescription = null,
                             modifier = Modifier.size(55.dp)
                         )
-                        Spacer(modifier = Modifier.width(10.dp))
+
+                        Spacer(
+                            modifier = Modifier.width(10.dp)
+                        )
+
                         Text(
                             text = "PILLBOT",
                             fontSize = 32.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
-                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Spacer(
+                        modifier = Modifier.height(10.dp)
+                    )
                 }
             }
 
-            // Enrutador Principal del Sistema Móvil
             NavHost(
                 navController = navController,
                 startDestination = Screen.Login.route,
                 modifier = Modifier.weight(1f)
             ) {
-                // Pantalla: Login
-                composable(route = Screen.Login.route) {
+
+                // LOGIN
+                composable(
+                    route = Screen.Login.route
+                ) {
                     Login(
-                        onForgotPasswordClick = { navController.navigate("restaurar") },
+                        onForgotPasswordClick = {
+                            navController.navigate(
+                                "restaurar"
+                            )
+                        },
+
                         onLoginSuccess = { idObtenido ->
-                            navController.navigate(Screen.Inicio.route) {
-                                popUpTo(Screen.Login.route) { inclusive = true }
+                            navController.navigate(
+                                Screen.Inicio.route
+                            ) {
+                                popUpTo(
+                                    Screen.Login.route
+                                ) {
+                                    inclusive = true
+                                }
                             }
                         },
-                        onRegisterClick = { navController.navigate("registrarse") }
+
+                        onRegisterClick = {
+                            navController.navigate(
+                                "registrarse"
+                            )
+                        }
                     )
                 }
 
-                // Pantalla: Registro de Usuarios
-                composable(route = "registrarse") {
+                // REGISTRO
+                composable(
+                    route = "registrarse"
+                ) {
                     Registrarse(
-                        onBackToLoginClick = { navController.popBackStack() },
-                        onRegisterSuccessClick = { navController.navigate(Screen.Login.route) }
+                        onBackToLoginClick = {
+                            navController.popBackStack()
+                        },
+
+                        onRegisterSuccessClick = {
+                            navController.navigate(
+                                Screen.Login.route
+                            )
+                        }
                     )
                 }
 
-                // Pantalla: Inicio / Dashboard Principal
-                composable(route = Screen.Inicio.route) {
+                // INICIO
+                composable(
+                    route = Screen.Inicio.route
+                ) {
                     Inicio(
                         usuarioId = usuarioIdInicial,
                         nombreUsuario = "Jimena",
-                        onIrANotificaciones = { navController.navigate(Screen.Notificaciones.route) },
-                        onIrACalendario = { navController.navigate(Screen.Calendario.route) },
+
+                        onIrANotificaciones = {
+                            navController.navigate(
+                                Screen.Notificaciones.route
+                            )
+                        },
+
+                        onIrACalendario = {
+                            navController.navigate(
+                                Screen.Calendario.route
+                            )
+                        },
+
                         onIrATratamiento = {
-                            navController.navigate(Screen.Tratamiento.route)
+                            navController.navigate(
+                                Screen.Tratamiento.route
+                            )
                         },
+
                         onIrAProgramacion = {
-                            navController.navigate(Screen.ProgramacionTratamiento.route)
+                            navController.navigate(
+                                Screen.ProgramacionTratamiento.route
+                            )
                         },
+
                         viewModel = tomaHoyViewModel
                     )
                 }
 
-                // Pantalla: Inventario de Medicamentos
-                composable(route = "historialMedicamento") {
-                    val listaMedicamentos by medicamentoViewModel.medicamentos
+                // HISTORIAL DE MEDICAMENTOS
+                composable(
+                    route = "historialMedicamento"
+                ) {
+                    val listaMedicamentos by
+                    medicamentoViewModel.medicamentos
 
                     LaunchedEffect(usuarioIdInicial) {
-                        medicamentoViewModel.cargarMedicamentos(usuarioIdInicial)
+                        medicamentoViewModel
+                            .cargarMedicamentos(
+                                usuarioIdInicial
+                            )
                     }
 
                     InventarioMedicamentosScreen(
                         medicamentos = listaMedicamentos,
-                        onMedicamentoClick = { medicamento ->
-                            medicamentoViewModel.medicamentoSeleccionado = medicamento
-                            navController.navigate("detalleMedicamento")
+
+                        onMedicamentoClick = {
+                                medicamento ->
+
+                            medicamentoViewModel
+                                .medicamentoSeleccionado =
+                                medicamento
+
+                            navController.navigate(
+                                "detalleMedicamento"
+                            )
+                        },
+
+                        onVerCompartimentos = {
+                            navController.navigate(
+                                "compartimentos"
+                            )
                         }
                     )
                 }
 
-                // Pantalla: Detalle del Medicamento Seleccionado
-                composable(route = "detalleMedicamento") {
-                    val medicamentoSeleccionado = medicamentoViewModel.medicamentoSeleccionado
+                // PANTALLA DE COMPARTIMENTOS
+                composable(
+                    route = "compartimentos"
+                ) {
+                    val listaCompartimentos by
+                    compartimentoViewModel
+                        .compartimentos
 
-                    if (medicamentoSeleccionado != null) {
+                    val estaCargando by
+                    compartimentoViewModel
+                        .cargando
+
+                    LaunchedEffect(usuarioIdInicial) {
+                        compartimentoViewModel
+                            .cargarCompartimentosUsuario(
+                                idUsuario =
+                                    usuarioIdInicial
+                            )
+                    }
+
+                    CompartimentosScreen(
+                        compartimentos =
+                            listaCompartimentos,
+
+                        cargando =
+                            estaCargando,
+
+                        onVolver = {
+                            navController
+                                .popBackStack()
+                        }
+                    )
+                }
+
+                // DETALLE DE MEDICAMENTO
+                composable(
+                    route = "detalleMedicamento"
+                ) {
+                    val medicamentoSeleccionado =
+                        medicamentoViewModel
+                            .medicamentoSeleccionado
+
+                    if (
+                        medicamentoSeleccionado != null
+                    ) {
                         DetalleMedicamento(
-                            medicamento = medicamentoSeleccionado,
-                            onVolver = { navController.popBackStack() },
-                            onRecargarClick = { navController.navigate("recargarMedicamento") }
+                            medicamento =
+                                medicamentoSeleccionado,
+
+                            onVolver = {
+                                navController
+                                    .popBackStack()
+                            },
+
+                            onRecargarClick = {
+                                navController.navigate(
+                                    "recargarMedicamento"
+                                )
+                            }
                         )
                     } else {
                         navController.popBackStack()
                     }
                 }
 
-                // Pantalla: Calendario General de Tomas
-                composable(route = Screen.Calendario.route) {
+                // CALENDARIO
+                composable(
+                    route = Screen.Calendario.route
+                ) {
                     PillBotCalendarScreen(
-                        usuarioId = usuarioIdInicial,
-                        onVolver = { navController.popBackStack() }
+                        usuarioId =
+                            usuarioIdInicial,
+
+                        onVolver = {
+                            navController
+                                .popBackStack()
+                        }
                     )
                 }
 
-                // Pantalla: Centro de Notificaciones
-                composable(route = Screen.Notificaciones.route) {
+                // NOTIFICACIONES
+                composable(
+                    route =
+                        Screen.Notificaciones.route
+                ) {
                     Notificaciones(
-                        usuarioId = usuarioIdInicial,
-                        onVolver = { navController.popBackStack() },
-                        viewModel = tomaHoyViewModel
+                        usuarioId =
+                            usuarioIdInicial,
+
+                        onVolver = {
+                            navController
+                                .popBackStack()
+                        },
+
+                        viewModel =
+                            tomaHoyViewModel
                     )
                 }
 
-                // Pantalla: Módulo de Control de Emergencia
-                composable(route = "controlEmergencia") {
+                // CONTROL DE EMERGENCIA
+                composable(
+                    route = "controlEmergencia"
+                ) {
                     ControlEmergencia()
                 }
 
-                // Pantalla: Detalle de Alerta en Calendario
-                composable(route = "detalleEvento") {
+                // DETALLE DEL EVENTO
+                composable(
+                    route = "detalleEvento"
+                ) {
                     PillBotEventDetailScreen(
-                        onVolver = { navController.popBackStack() }
+                        onVolver = {
+                            navController
+                                .popBackStack()
+                        }
                     )
                 }
 
-                // Pantalla: Recargar stock de Medicamento
-                composable(route = "recargarMedicamento") {
-                    val medicamentoSeleccionado = medicamentoViewModel.medicamentoSeleccionado
-                    if (medicamentoSeleccionado != null) {
+                // RECARGAR MEDICAMENTO
+                composable(
+                    route = "recargarMedicamento"
+                ) {
+                    val medicamentoSeleccionado =
+                        medicamentoViewModel
+                            .medicamentoSeleccionado
+
+                    if (
+                        medicamentoSeleccionado != null
+                    ) {
                         RecargarMedicamento(
-                            medicamento = medicamentoSeleccionado,
-                            onVolver = { navController.popBackStack() }
+                            medicamento =
+                                medicamentoSeleccionado,
+
+                            onVolver = {
+                                navController
+                                    .popBackStack()
+                            }
                         )
                     } else {
                         navController.popBackStack()
                     }
                 }
 
-                // Pantalla: Perfil de Configuración de Usuario
-// Pantalla: Programación del Tratamiento
-                composable(route = Screen.ProgramacionTratamiento.route) {
+                // PROGRAMACIÓN DE TRATAMIENTO
+                composable(
+                    route =
+                        Screen.ProgramacionTratamiento.route
+                ) {
                     RegistrarTratamiento(
-                        usuarioId = usuarioIdInicial,   // NUEVO
+                        usuarioId =
+                            usuarioIdInicial,
+
                         onVolver = {
-                            navController.popBackStack()
+                            navController
+                                .popBackStack()
                         },
+
                         onGuardadoExitoso = {
-                            navController.popBackStack()
+                            navController
+                                .popBackStack()
                         }
                     )
                 }
 
-                composable(route = Screen.Perfil.route) {
+                // PERFIL
+                composable(
+                    route = Screen.Perfil.route
+                ) {
                     ConfiguracionPerfil(
-                        usuarioId = usuarioIdInicial,
+                        usuarioId =
+                            usuarioIdInicial,
+
                         onCerrarSesion = {
-                            navController.navigate(Screen.Login.route) {
-                                popUpTo(0) { inclusive = true }
+                            navController.navigate(
+                                Screen.Login.route
+                            ) {
+                                popUpTo(0) {
+                                    inclusive = true
+                                }
                             }
                         }
                     )
                 }
 
-                composable(route = "restaurar") {}
-                composable(route = "verificar") {}
-                composable(route = "restablecer") {}
+                composable(
+                    route = "restaurar"
+                ) {
+                }
+
+                composable(
+                    route = "verificar"
+                ) {
+                }
+
+                composable(
+                    route = "restablecer"
+                ) {
+                }
             }
         }
     }

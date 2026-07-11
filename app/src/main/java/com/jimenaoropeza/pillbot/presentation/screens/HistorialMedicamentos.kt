@@ -32,7 +32,8 @@ import java.time.temporal.ChronoUnit
 @Composable
 fun InventarioMedicamentosScreen(
     medicamentos: List<Medicamento>,
-    onMedicamentoClick: (Medicamento) -> Unit
+    onMedicamentoClick: (Medicamento) -> Unit,
+    onVerCompartimentos: () -> Unit
 ) {
     var query by remember { mutableStateOf("") }
 
@@ -61,6 +62,23 @@ fun InventarioMedicamentosScreen(
         )
 
         Spacer(modifier = Modifier.height(20.dp))
+
+        Button(
+            onClick = onVerCompartimentos,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF59CBA2)
+            )
+        ) {
+            Text(
+                text = "Ver compartimentos",
+                color = Color.White,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = query,

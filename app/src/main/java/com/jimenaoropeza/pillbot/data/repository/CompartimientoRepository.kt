@@ -10,4 +10,9 @@ class CompartimentoRepository {
     suspend fun obtenerCompartimentos(): List<CompartimentoRequest> {
         return api.obtenerCompartimentos()
     }
+    suspend fun obtenerCompartimentosUsuario(
+        idUsuario: Int
+    ): List<CompartimentoRequest> {
+        return api.obtenerCompartimentosUsuario(idUsuario)
+    }
 }

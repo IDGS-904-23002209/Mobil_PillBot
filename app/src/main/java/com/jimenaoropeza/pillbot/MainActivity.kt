@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
 
             // Centralización dinámica del ID del usuario actual de la sesión
             // Le pasamos por defecto el ID 5 como lo tenías configurado
-            val usuarioIdDinamico = 5
+            val usuarioIdDinamico = 3
 
             // Ejecutamos tu enrutador limpio, el cual se encargará de gestionar
             // las pantallas (Login, Inicio, Calendario, Notificaciones, etc.)

@@ -30,4 +30,40 @@ class CompartimentoViewModel : ViewModel() {
             }
         }
     }
+    fun cargarCompartimentosUsuario(
+        idUsuario: Int,
+        onError: (String) -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            cargando.value = true
+
+            try {
+                val lista =
+                    repository.obtenerCompartimentosUsuario(idUsuario)
+
+                compartimentos.value = lista
+
+                Log.d(
+                    "COMPARTIMENTO_VM",
+                    "Compartimentos del usuario: ${lista.size}"
+                )
+
+            } catch (e: Exception) {
+
+                Log.e(
+                    "COMPARTIMENTO_VM",
+                    "Error al obtener compartimentos del usuario",
+                    e
+                )
+
+                onError(
+                    e.message
+                        ?: "Error al cargar los compartimentos"
+                )
+
+            } finally {
+                cargando.value = false
+            }
+        }
+    }
 }

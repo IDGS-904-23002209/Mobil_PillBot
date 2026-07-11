@@ -129,4 +129,11 @@ interface ApiService {
         @Query("soloDisponibles") soloDisponibles: Boolean = true,
         @Query("idUsuario") idUsuario: Int
     ): List<DetalleRecetaCompletoRequest>
+
+    //compartimentos por usuarioId
+    @GET("api/compartimentos/usuario/{idUsuario}")
+    suspend fun obtenerCompartimentosUsuario(
+        @Path("idUsuario") idUsuario: Int
+    ): List<CompartimentoRequest>
 }
+
