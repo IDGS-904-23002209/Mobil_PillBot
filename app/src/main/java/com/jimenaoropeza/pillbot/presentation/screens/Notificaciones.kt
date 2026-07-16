@@ -23,6 +23,9 @@ import com.jimenaoropeza.pillbot.data.modelo.HistorialRequest
 import com.jimenaoropeza.pillbot.modelo.TomaHoy
 import com.jimenaoropeza.pillbot.presentation.viewmodel.TomaHoyViewModel
 import com.jimenaoropeza.pillbot.viewmodel.HistorialViewModel
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun Notificaciones(
@@ -193,12 +196,13 @@ fun NotificationCard(
                             val timestampActual = java.time.Instant.now().toString()
 
                             val historial = HistorialRequest(
-                                IdToma = toma.id_toma,
-                                FechaReal = timestampActual,
-                                HoraReal = timestampActual,
-                                Estatus = "tomado"
+                                idToma = toma.id_toma,
+                                fechaReal = LocalDate.now().toString() + "Z", // Formato ISO básico
+                                horaReal = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")),
+                                estatus = "Tomado"
                             )
-                            historialViewModel.registrarToma(historial = historial, onSuccess = { onTomaRegistrada() })
+
+                            historialViewModel.marcarTomaComoRealizada(historial = historial, onSuccess = { onTomaRegistrada() })
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF59CBA2))
                     ) {

@@ -4,6 +4,20 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.foundation.clickable
+
+
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -84,7 +98,6 @@ fun Inicio(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             Text(
                 text = "Hoy, $fechaFormateada",
                 fontSize = 20.sp,
@@ -97,11 +110,8 @@ fun Inicio(
                 contentDescription = "Programación",
                 modifier = Modifier
                     .size(34.dp)
-                    .clickable {
-                        onIrAProgramacion()
-                    }
+                    .clickable { onIrAProgramacion() }
             )
-
         }
 
         Row(
@@ -109,13 +119,11 @@ fun Inicio(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             Text(
                 text = "$tomasPendientes medicamentos pendientes",
                 fontSize = 18.sp,
                 color = Color.Black
             )
-
         }
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -164,7 +172,13 @@ fun Inicio(
             )
         } else {
             tomasHoy.forEach { toma ->
-                MedicamentItem(toma = toma)
+                MedicamentItem(
+                    toma = toma,
+                    onTomarClick = {
+                        // Pasamos el ID único de la toma al ViewModel
+                        viewModel.marcarComoTomado(usuarioId = usuarioId, idToma = toma.id_toma)
+                    }
+                )
                 Spacer(modifier = Modifier.height(12.dp))
             }
         }
@@ -173,7 +187,10 @@ fun Inicio(
 }
 
 @Composable
-fun MedicamentItem(toma: TomaHoy) {
+fun MedicamentItem(
+    toma: TomaHoy,
+    onTomarClick: () -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
@@ -194,35 +211,66 @@ fun MedicamentItem(toma: TomaHoy) {
                 )
             }
             Row(
-                modifier = Modifier.padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_pildora),
-                    contentDescription = null,
-                    modifier = Modifier.size(32.dp)
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text(
-                        text = toma.nombre_medicamento ?: "Medicamento sin nombre",
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black,
-                        fontSize = 14.sp
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_pildora),
+                        contentDescription = null,
+                        modifier = Modifier.size(32.dp)
                     )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = toma.nombre_medicamento ?: "Medicamento sin nombre",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black,
+                            fontSize = 14.sp
+                        )
 
-                    Text(
-                        text = "Dosis: ${toma.dosis ?: "No especificada"}",
-                        color = Color.DarkGray,
-                        fontSize = 13.sp
-                    )
+                        Text(
+                            text = "Dosis: ${toma.dosis ?: "No especificada"}",
+                            color = Color.DarkGray,
+                            fontSize = 13.sp
+                        )
 
-                    Text(
-                        text = if (toma.tomado) "Tomado" else "Pendiente",
-                        color = if (toma.tomado) Color(0xFF59CBA2) else Color(0xFFFF9800),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                        Text(
+                            text = if (toma.tomado) "Tomado" else "Pendiente",
+                            color = if (toma.tomado) Color(0xFF59CBA2) else Color(0xFFFF9800),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Acción Manual: Botón de confirmación
+                if (!toma.tomado) {
+                    Button(
+                        onClick = onTomarClick,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1D2A44)),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp),
+                        modifier = Modifier.height(32.dp)
+                    ) {
+                        Text(text = "Tomar", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                } else {
+                    // Indicador visual de éxito cuando ya se marcó
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .background(Color(0xFF59CBA2), RoundedCornerShape(12.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "✓", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    }
                 }
             }
         }

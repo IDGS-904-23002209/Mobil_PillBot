@@ -28,9 +28,7 @@ import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-// Puedes conservar esta si tus otros endpoints la usan para respuestas genéricas
 data class RespuestaServidor(
-
     val mensaje: String,
     val idProgramacion: Int? = null
 )
@@ -57,15 +55,11 @@ interface ApiService {
         @Body request: InventarioMedicamentoRequest
     ): Response<RespuestaServidor>
 
-    @GET("api/recordatorios/hoy/{usuario_id}")
-    suspend fun obtenerTomasHoy(
-        @Path("usuario_id") usuarioId: Int
-    ): List<TomaHoy>
-
+    // ENDPOINT CLAVE: Usaremos este método existente con el objeto adecuado para marcar la toma
     @POST("api/historial/registrar-toma")
     suspend fun registrarToma(
         @Body historial: HistorialRequest
-    ): HistorialRequest
+    ): Response<Unit> // Cambiado a Response<Unit> para verificar códigos de estado HTTP limpiamente
 
     @POST("api/auth/login")
     suspend fun login(
@@ -112,28 +106,28 @@ interface ApiService {
         @Query("idUsuario") idUsuario: Int
     ): List<ProgramacionTratamientoRequest>
 
-    // Endpoint Compartimentos: api/compartimentos
     @GET("api/compartimentos")
     suspend fun obtenerCompartimentos(): List<CompartimentoRequest>
 
-    // Endpoint DetalleReceta: api/detalleReceta/receta/{id_receta}
     @GET("api/detalleReceta/receta/{id_receta}")
     suspend fun consultarDetallesPorReceta(
         @Path("id_receta") idReceta: Int
     ): Response<List<DetalleRecetaRequest>>
 
-    // soloDisponibles = true  (default) -> excluye los que ya tienen tratamiento (para Registrar)
-// soloDisponibles = false           -> trae TODOS (para Editar)
     @GET("api/detalleReceta/completo")
     suspend fun obtenerDetallesRecetaCompletos(
         @Query("soloDisponibles") soloDisponibles: Boolean = true,
         @Query("idUsuario") idUsuario: Int
     ): List<DetalleRecetaCompletoRequest>
 
-    //compartimentos por usuarioId
     @GET("api/compartimentos/usuario/{idUsuario}")
     suspend fun obtenerCompartimentosUsuario(
         @Path("idUsuario") idUsuario: Int
     ): List<CompartimentoRequest>
-}
 
+    // Obtener los recordatorios para la pantalla de inicio
+    @GET("api/recordatorios/hoy/{usuario_id}")
+    suspend fun obtenerTomasHoy(
+        @Path("usuario_id") usuarioId: Int
+    ): List<TomaHoy>
+}
