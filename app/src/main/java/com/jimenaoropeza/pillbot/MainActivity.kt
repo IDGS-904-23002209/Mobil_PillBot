@@ -40,15 +40,11 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            // Inicializamos el NavController oficial de Jetpack Compose
             val navController = rememberNavController()
 
-            // Centralización dinámica del ID del usuario actual de la sesión
-            // Le pasamos por defecto el ID 5 como lo tenías configurado
-            val usuarioIdDinamico = 3
+            // -1 significa "todavía no hay sesión iniciada"
+            var usuarioIdDinamico by remember { mutableStateOf(-1) }
 
-            // Ejecutamos tu enrutador limpio, el cual se encargará de gestionar
-            // las pantallas (Login, Inicio, Calendario, Notificaciones, etc.)
             PillBotNavigation(
                 navController = navController,
                 usuarioIdInicial = usuarioIdDinamico

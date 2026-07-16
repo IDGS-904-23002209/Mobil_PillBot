@@ -111,7 +111,7 @@ fun Inicio(
         ) {
 
             Text(
-                text = "$tomasPendientes medicamentos pendientes",
+                text = "$tomasPendientes tomas pendientes",
                 fontSize = 18.sp,
                 color = Color.Black
             )

@@ -12,8 +12,7 @@ data class TomaHoy(
     @SerializedName("nombreMedicamento")
     val nombre_medicamento: String?,
 
-    // Aquí mapeamos "cantidadDosis" de tu API a tu variable "dosis"
-    @SerializedName("cantidadDosis")
+    @SerializedName("dosis")
     val dosis: String?,
 
     @SerializedName("tomado")

@@ -36,7 +36,7 @@ import com.jimenaoropeza.pillbot.ui.theme.GrayLight
 fun Login(
     viewModel: AuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     onForgotPasswordClick: () -> Unit,
-    onLoginSuccess: (Int) -> Unit, // <-- Corregido para coincidir con tu NavController
+    onLoginSuccess: (Int, String) -> Unit, // <-- Ahora también entrega el nombre
     onRegisterClick: () -> Unit
 ) {
     var usernameOrEmail by remember { mutableStateOf("") }
@@ -183,10 +183,9 @@ fun Login(
             Button(
                 onClick = {
                     if (usernameOrEmail.isNotEmpty() && password.isNotEmpty()) {
-                        viewModel.iniciarSesion(usernameOrEmail, password) { idRecibido ->
-                            // Convertimos de forma segura a Int por si viene como String u otro objeto
-                            val userId = idRecibido.toString().toIntOrNull() ?: 5
-                            onLoginSuccess(userId)
+                        viewModel.iniciarSesion(usernameOrEmail, password) {
+                            // Usamos directamente los datos ya guardados en el ViewModel
+                            onLoginSuccess(viewModel.usuarioId, viewModel.usuarioNombre)
                         }
                     }
                 },

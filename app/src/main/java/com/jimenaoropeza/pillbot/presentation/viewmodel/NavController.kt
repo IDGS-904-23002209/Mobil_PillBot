@@ -37,15 +37,20 @@ fun PillBotNavigation(
     val recordatorioViewModel: RecordatorioViewModel = viewModel()
     val compartimentoViewModel: CompartimentoViewModel = viewModel()
 
+    // ESTADO REAL del usuario en sesión (esto es lo que cambia al hacer login)
+// ESTADO REAL del usuario en sesión (esto es lo que cambia al hacer login)
+    var usuarioId by remember { mutableStateOf(usuarioIdInicial) }
+    var nombreUsuario by remember { mutableStateOf("Usuario") }
+
     // Monitorea la ruta actual de navegación
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
     // Efecto lanzado globalmente para actualizar
     // el contador de notificaciones pendientes
-    LaunchedEffect(usuarioIdInicial) {
+    LaunchedEffect(usuarioId) {
         tomaHoyViewModel.cargarTomasHoy(
-            usuarioId = usuarioIdInicial
+            usuarioId = usuarioId
         )
     }
 
@@ -238,7 +243,10 @@ fun PillBotNavigation(
                             )
                         },
 
-                        onLoginSuccess = { idObtenido ->
+                        onLoginSuccess = { idObtenido, nombreObtenido ->
+                            usuarioId = idObtenido           // 👈 ID correcto
+                            nombreUsuario = nombreObtenido   // 👈 Nombre correcto
+
                             navController.navigate(
                                 Screen.Inicio.route
                             ) {
@@ -280,8 +288,8 @@ fun PillBotNavigation(
                     route = Screen.Inicio.route
                 ) {
                     Inicio(
-                        usuarioId = usuarioIdInicial,
-                        nombreUsuario = "Jimena",
+                        usuarioId = usuarioId,
+                        nombreUsuario = nombreUsuario,
 
                         onIrANotificaciones = {
                             navController.navigate(
@@ -318,10 +326,10 @@ fun PillBotNavigation(
                     val listaMedicamentos by
                     medicamentoViewModel.medicamentos
 
-                    LaunchedEffect(usuarioIdInicial) {
+                    LaunchedEffect(usuarioId) {
                         medicamentoViewModel
                             .cargarMedicamentos(
-                                usuarioIdInicial
+                                usuarioId
                             )
                     }
 
@@ -360,11 +368,11 @@ fun PillBotNavigation(
                     compartimentoViewModel
                         .cargando
 
-                    LaunchedEffect(usuarioIdInicial) {
+                    LaunchedEffect(usuarioId) {
                         compartimentoViewModel
                             .cargarCompartimentosUsuario(
                                 idUsuario =
-                                    usuarioIdInicial
+                                    usuarioId
                             )
                     }
 
@@ -419,7 +427,7 @@ fun PillBotNavigation(
                 ) {
                     PillBotCalendarScreen(
                         usuarioId =
-                            usuarioIdInicial,
+                            usuarioId,
 
                         onVolver = {
                             navController
@@ -435,7 +443,7 @@ fun PillBotNavigation(
                 ) {
                     Notificaciones(
                         usuarioId =
-                            usuarioIdInicial,
+                            usuarioId,
 
                         onVolver = {
                             navController
@@ -498,7 +506,7 @@ fun PillBotNavigation(
                 ) {
                     RegistrarTratamiento(
                         usuarioId =
-                            usuarioIdInicial,
+                            usuarioId,
 
                         onVolver = {
                             navController
@@ -518,7 +526,7 @@ fun PillBotNavigation(
                 ) {
                     ConfiguracionPerfil(
                         usuarioId =
-                            usuarioIdInicial,
+                            usuarioId,
 
                         onCerrarSesion = {
                             navController.navigate(

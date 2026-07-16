@@ -139,9 +139,9 @@ private fun SeccionRegistrarTratamiento(
     val cargandoCompartimentos by compartimentoViewModel.cargando
 
     var formularioAbierto by remember { mutableStateOf(false) }
+    var refreshTrigger by remember { mutableStateOf(0) }
 
-    // soloDisponibles = true -> NO muestra detalle_receta que ya tienen tratamiento
-    LaunchedEffect(formularioAbierto) {
+    LaunchedEffect(refreshTrigger) {
         if (formularioAbierto) {
             detalleRecetaViewModel.cargarTodosLosDetalles(soloDisponibles = true, idUsuario = usuarioId) { mensaje ->
                 Toast.makeText(context, "Detalle receta: $mensaje", Toast.LENGTH_LONG).show()
@@ -171,8 +171,9 @@ private fun SeccionRegistrarTratamiento(
 
     if (!formularioAbierto) {
         Button(
-            onClick = { formularioAbierto = true },
-            modifier = Modifier.fillMaxWidth().height(50.dp),
+            onClick = { formularioAbierto = true
+                refreshTrigger++},
+                modifier = Modifier.fillMaxWidth().height(50.dp),
             colors = ButtonDefaults.buttonColors(containerColor = COLOR_PRINCIPAL)
         ) {
             Icon(imageVector = Icons.Default.Add, contentDescription = null)
