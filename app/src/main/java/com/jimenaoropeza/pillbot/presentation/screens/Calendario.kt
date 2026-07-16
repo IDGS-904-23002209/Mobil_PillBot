@@ -36,11 +36,11 @@ import java.util.Locale
 enum class CalendarView { DIA, SEMANA, MES, LISTA }
 
 val datosEjemploHoy = listOf(
-    TomaHoy(1, "08:00", "Paracetamol", "500mg", true),
-    TomaHoy(2, "10:30", "Ibuprofeno", "400mg", false),
-    TomaHoy(3, "14:00", "Omeprazol", "20mg", true),
-    TomaHoy(4, "20:00", "Losartán", "50mg", false),
-    TomaHoy(5, "22:00", "Metformina", "850mg", false)
+    TomaHoy(1, "08:00", "Paracetamol", "500mg", "Tomado"),
+    TomaHoy(2, "10:30", "Ibuprofeno", "400mg", "Pendiente"),
+    TomaHoy(3, "14:00", "Omeprazol", "20mg", "Tomado"),
+    TomaHoy(4, "20:00", "Losartán", "50mg", "Pendiente"),
+    TomaHoy(5, "22:00", "Metformina", "850mg", "Pendiente")
 )
 
 @Composable
@@ -1001,7 +1001,8 @@ fun ListView(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(modifier = Modifier.size(10.dp).background(Color(0xFFFF9800), CircleShape))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Pendientes: $pendientesSemana", fontSize = 12.sp, color = Color(0xFFFF9800))
+                Text(
+                    "Pendientes: $pendientesSemana", fontSize = 12.sp, color = Color(0xFFFF9800))
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Total: ${tomasSemanaActual.size}", fontSize = 12.sp, color = Color.Gray)
@@ -1211,13 +1212,14 @@ fun ListView(
                                     if (!toma.tomado) {
                                         Button(
                                             onClick = {
+                                                // CORREGIDO: Nombres de variables alineados al modelo HistorialRequest
                                                 val historial = HistorialRequest(
-                                                    IdToma = toma.id_toma,
-                                                    FechaReal = LocalDate.now().toString(),
-                                                    HoraReal = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")),
-                                                    Estatus = "tomado"
+                                                    idToma = toma.id_toma,
+                                                    fechaReal = LocalDate.now().toString() + "Z", // Formato ISO básico
+                                                    horaReal = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")),
+                                                    estatus = "Tomado"
                                                 )
-                                                historialViewModel.registrarToma(
+                                                historialViewModel.marcarTomaComoRealizada(
                                                     historial = historial,
                                                     onSuccess = onTomaRegistrada
                                                 )
@@ -1225,19 +1227,22 @@ fun ListView(
                                             colors = ButtonDefaults.buttonColors(
                                                 containerColor = PillBotMint
                                             ),
-                                            modifier = Modifier.width(60.dp)
+                                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
+                                            modifier = Modifier.width(65.dp).height(30.dp)
                                         ) {
                                             Text(
                                                 text = "Tomar",
                                                 color = Color.White,
-                                                fontSize = 10.sp
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.Bold
                                             )
                                         }
                                     } else {
                                         Text(
                                             text = "Tomado",
                                             fontSize = 11.sp,
-                                            color = PillBotMint
+                                            color = PillBotMint,
+                                            fontWeight = FontWeight.Bold
                                         )
                                     }
                                 }

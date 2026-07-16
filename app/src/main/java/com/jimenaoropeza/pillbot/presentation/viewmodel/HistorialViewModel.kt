@@ -1,5 +1,6 @@
 package com.jimenaoropeza.pillbot.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jimenaoropeza.pillbot.data.modelo.HistorialRequest
@@ -10,16 +11,20 @@ class HistorialViewModel : ViewModel() {
 
     private val repository = HistorialRepository()
 
-    fun registrarToma(
-        historial: HistorialRequest,
-        onSuccess: () -> Unit = {}
-    ) {
+    // CORREGIDO: Añadimos un callback opcional 'onSuccess'
+    fun marcarTomaComoRealizada(historial: HistorialRequest, onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
             try {
-                repository.registrarToma(historial)
-                onSuccess()
+                val response = repository.registrarToma(historial)
+                if (response.isSuccessful) {
+                    Log.d("PillBot", "Toma registrada exitosamente en la nube")
+                    // Ejecutamos el callback en el hilo principal para actualizar la interfaz
+                    onSuccess()
+                } else {
+                    Log.e("PillBot", "Error del servidor: ${response.code()}")
+                }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("PillBot", "Fallo de conexión a la nube", e)
             }
         }
     }
