@@ -76,6 +76,8 @@ fun RegistrarTratamiento(
     val detalleRecetaViewModel: DetalleRecetaCompletoViewModel = viewModel()
     val compartimentoViewModel: CompartimentoViewModel = viewModel()
 
+    var formularioAbierto by remember { mutableStateOf(false) }   // NUEVO: estado subido desde SeccionRegistrarTratamiento
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -103,19 +105,24 @@ fun RegistrarTratamiento(
             programacionViewModel = programacionViewModel,
             detalleRecetaViewModel = detalleRecetaViewModel,
             compartimentoViewModel = compartimentoViewModel,
-            onGuardadoExitoso = onGuardadoExitoso
+            onGuardadoExitoso = onGuardadoExitoso,
+            formularioAbierto = formularioAbierto,                          // NUEVO
+            onFormularioAbiertoChange = { formularioAbierto = it }          // NUEVO
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        SeccionTablaYEditarTratamientos(
-            context = context,
-            usuarioId = usuarioId,   // NUEVO
-            programacionViewModel = programacionViewModel,
-            detalleRecetaViewModel = detalleRecetaViewModel,
-            compartimentoViewModel = compartimentoViewModel,
-            onGuardadoExitoso = onGuardadoExitoso
-        )
+        // NUEVO: la tabla solo se muestra cuando el formulario de registro está cerrado
+        if (!formularioAbierto) {
+            SeccionTablaYEditarTratamientos(
+                context = context,
+                usuarioId = usuarioId,   // NUEVO
+                programacionViewModel = programacionViewModel,
+                detalleRecetaViewModel = detalleRecetaViewModel,
+                compartimentoViewModel = compartimentoViewModel,
+                onGuardadoExitoso = onGuardadoExitoso
+            )
+        }
     }
 }
 
@@ -131,14 +138,15 @@ private fun SeccionRegistrarTratamiento(
     programacionViewModel: ProgramacionViewModel,
     detalleRecetaViewModel: DetalleRecetaCompletoViewModel,
     compartimentoViewModel: CompartimentoViewModel,
-    onGuardadoExitoso: () -> Unit
+    onGuardadoExitoso: () -> Unit,
+    formularioAbierto: Boolean,                          // NUEVO: ahora viene del padre
+    onFormularioAbiertoChange: (Boolean) -> Unit          // NUEVO: ahora viene del padre
 ) {
     val detalles by detalleRecetaViewModel.detallesCompletos
     val compartimentos by compartimentoViewModel.compartimentos
     val cargandoDetalles by detalleRecetaViewModel.cargando
     val cargandoCompartimentos by compartimentoViewModel.cargando
 
-    var formularioAbierto by remember { mutableStateOf(false) }
     var refreshTrigger by remember { mutableStateOf(0) }
 
     LaunchedEffect(refreshTrigger) {
@@ -171,7 +179,7 @@ private fun SeccionRegistrarTratamiento(
 
     if (!formularioAbierto) {
         Button(
-            onClick = { formularioAbierto = true
+            onClick = { onFormularioAbiertoChange(true)
                 refreshTrigger++},
                 modifier = Modifier.fillMaxWidth().height(50.dp),
             colors = ButtonDefaults.buttonColors(containerColor = COLOR_PRINCIPAL)
@@ -230,7 +238,7 @@ private fun SeccionRegistrarTratamiento(
                 OutlinedButton(
                     onClick = {
                         limpiar()
-                        formularioAbierto = false
+                        onFormularioAbiertoChange(false)
                     },
                     modifier = Modifier.weight(1f)
                 ) {
@@ -265,7 +273,7 @@ private fun SeccionRegistrarTratamiento(
                                     Toast.makeText(context, mensaje, Toast.LENGTH_SHORT).show()
                                     if (exito) {
                                         limpiar()
-                                        formularioAbierto = false
+                                        onFormularioAbiertoChange(false)
                                         onGuardadoExitoso()
                                     }
                                 }
@@ -353,6 +361,12 @@ private fun SeccionTablaYEditarTratamientos(
                     // ---- Encabezado ----
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("N° Trat.", modifier = Modifier.width(70.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp) // antes: "Detalle"
+                        Text("Padecimiento", modifier = Modifier.width(140.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("Medicamento", modifier = Modifier.width(140.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("Dosis", modifier = Modifier.width(100.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("Indicaciones", modifier = Modifier.width(160.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("Frec. (hrs)", modifier = Modifier.width(80.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("Duración (días)", modifier = Modifier.width(110.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         Text("Compart.", modifier = Modifier.width(80.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         Text("Hora inicio", modifier = Modifier.width(90.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         Text("Día inicio", modifier = Modifier.width(100.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
@@ -381,11 +395,41 @@ private fun SeccionTablaYEditarTratamientos(
                                 fontSize = 13.sp
                             )
                             Text(
+                                text = detalleInfo?.padecimiento ?: "-",
+                                modifier = Modifier.width(140.dp),
+                                fontSize = 13.sp
+                            )
+                            Text(
+                                text = detalleInfo?.nombreComercial ?: "-",
+                                modifier = Modifier.width(140.dp),
+                                fontSize = 13.sp
+                            )
+                            Text(
+                                text = detalleInfo?.dosis ?: "-",
+                                modifier = Modifier.width(100.dp),
+                                fontSize = 13.sp
+                            )
+                            Text(
+                                text = detalleInfo?.indicaciones ?: "-",
+                                modifier = Modifier.width(160.dp),
+                                fontSize = 13.sp
+                            )
+                            Text(
+                                text = detalleInfo?.frecuenciaHoras?.toString() ?: "-",
+                                modifier = Modifier.width(80.dp),
+                                fontSize = 13.sp
+                            )
+                            Text(
+                                text = detalleInfo?.duracionDias?.toString() ?: "-",
+                                modifier = Modifier.width(110.dp),
+                                fontSize = 13.sp
+                            )
+                            Text(
                                 text = compartimento?.numeroCompartimento?.toString() ?: tratamiento.idCompartimento?.toString() ?: "-",
                                 modifier = Modifier.width(80.dp),
                                 fontSize = 13.sp
                             )
-                       
+
                             // ... el resto del renglón queda exactamente igual
                             Text(
                                 text = tratamiento.horaInicio ?: "-",
@@ -864,7 +908,7 @@ private fun CamposTratamiento(
     Spacer(modifier = Modifier.height(12.dp))
 
     Text("Hora de inicio")
-    Text(text = "Opcional: si la dejas vacía, el servidor usa la hora actual", fontSize = 11.sp, color = Color.Gray)
+    Text(text = "Si la dejas vacía, el servidor usa la hora actual", fontSize = 11.sp, color = Color.Gray)
     OutlinedTextField(
         value = horaInicio,
         onValueChange = onHoraInicioChange,
@@ -883,7 +927,7 @@ private fun CamposTratamiento(
     Spacer(modifier = Modifier.height(12.dp))
 
     Text("Día de inicio")
-    Text(text = "Opcional: si lo dejas vacío, el servidor usa la fecha actual", fontSize = 11.sp, color = Color.Gray)
+    Text(text = "Si lo dejas vacío, el servidor usa la fecha actual", fontSize = 11.sp, color = Color.Gray)
     OutlinedTextField(
         value = diaInicio,
         onValueChange = onDiaInicioChange,
@@ -899,7 +943,6 @@ private fun CamposTratamiento(
     Spacer(modifier = Modifier.height(12.dp))
 
     Text("Día de fin")
-    Text(text = "Se calcula automáticamente (día de inicio + duración de la receta)", fontSize = 11.sp, color = Color.Gray)
     OutlinedTextField(
         value = "Se calcula automáticamente",
         onValueChange = {},
