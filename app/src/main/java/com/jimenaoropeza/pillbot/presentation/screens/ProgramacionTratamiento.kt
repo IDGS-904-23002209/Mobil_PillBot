@@ -146,7 +146,7 @@ private fun SeccionRegistrarTratamiento(
             detalleRecetaViewModel.cargarTodosLosDetalles(soloDisponibles = true, idUsuario = usuarioId) { mensaje ->
                 Toast.makeText(context, "Detalle receta: $mensaje", Toast.LENGTH_LONG).show()
             }
-            compartimentoViewModel.cargarCompartimentos { mensaje ->
+            compartimentoViewModel.cargarCompartimentosUsuario(usuarioId) { mensaje ->
                 Toast.makeText(context, "Compartimentos: $mensaje", Toast.LENGTH_LONG).show()
             }
         }
@@ -156,7 +156,7 @@ private fun SeccionRegistrarTratamiento(
     var compartimentoSeleccionado by remember { mutableStateOf<CompartimentoRequest?>(null) }
     var horaInicio by remember { mutableStateOf("") }
     var diaInicio by remember { mutableStateOf("") }
-    var pesoEsperado by remember { mutableStateOf("") }
+    //var pesoEsperado by remember { mutableStateOf("") }
     var activo by remember { mutableStateOf(true) }
     var guardando by remember { mutableStateOf(false) }
 
@@ -165,7 +165,7 @@ private fun SeccionRegistrarTratamiento(
         compartimentoSeleccionado = null
         horaInicio = ""
         diaInicio = ""
-        pesoEsperado = ""
+       // pesoEsperado = ""
         activo = true
     }
 
@@ -216,8 +216,8 @@ private fun SeccionRegistrarTratamiento(
                         onHoraInicioChange = { horaInicio = it },
                         diaInicio = diaInicio,
                         onDiaInicioChange = { diaInicio = it },
-                        pesoEsperado = pesoEsperado,
-                        onPesoEsperadoChange = { pesoEsperado = it },
+                      //  pesoEsperado = pesoEsperado,
+                     //   onPesoEsperadoChange = { pesoEsperado = it },
                         activo = activo,
                         onActivoChange = { activo = it }
                     )
@@ -253,7 +253,7 @@ private fun SeccionRegistrarTratamiento(
                                     idDetalleReceta = detalleSeleccionado!!.idDetalleReceta,
                                     idCompartimento = compartimentoSeleccionado!!.idCompartimento,
                                     horaInicio = horaInicio.trim().ifBlank { null },
-                                    pesoEsperadoGramos = pesoEsperado.toDoubleOrNull(),
+                                   // pesoEsperadoGramos = pesoEsperado.toDoubleOrNull(),
                                     diaInicio = diaInicio.trim().ifBlank { null },
                                     diaFin = null,
                                     activo = activo
@@ -310,7 +310,7 @@ private fun SeccionTablaYEditarTratamientos(
         detalleRecetaViewModel.cargarTodosLosDetalles(soloDisponibles = false, idUsuario = usuarioId) { mensaje ->
             Toast.makeText(context, "Detalle receta: $mensaje", Toast.LENGTH_LONG).show()
         }
-        compartimentoViewModel.cargarCompartimentos { mensaje ->
+        compartimentoViewModel.cargarCompartimentosUsuario(usuarioId) { mensaje ->
             Toast.makeText(context, "Compartimentos: $mensaje", Toast.LENGTH_LONG).show()
         }
     }
@@ -354,7 +354,6 @@ private fun SeccionTablaYEditarTratamientos(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("N° Trat.", modifier = Modifier.width(70.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp) // antes: "Detalle"
                         Text("Compart.", modifier = Modifier.width(80.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                        Text("Peso (g)", modifier = Modifier.width(70.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)   // NUEVO
                         Text("Hora inicio", modifier = Modifier.width(90.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         Text("Día inicio", modifier = Modifier.width(100.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         Text("Día fin", modifier = Modifier.width(100.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
@@ -386,11 +385,7 @@ private fun SeccionTablaYEditarTratamientos(
                                 modifier = Modifier.width(80.dp),
                                 fontSize = 13.sp
                             )
-                            Text(
-                                text = tratamiento.pesoEsperadoGramos?.toString() ?: "-",   // NUEVO
-                                modifier = Modifier.width(70.dp),
-                                fontSize = 13.sp
-                            )
+                       
                             // ... el resto del renglón queda exactamente igual
                             Text(
                                 text = tratamiento.horaInicio ?: "-",
@@ -493,7 +488,7 @@ private fun FormularioEditarTratamiento(
     var diaInicio by remember(tratamiento.idProgramacion) {
         mutableStateOf(formatearFecha(tratamiento.diaInicio).let { if (it == "-") "" else it })
     }
-    var pesoEsperado by remember(tratamiento.idProgramacion) { mutableStateOf(tratamiento.pesoEsperadoGramos?.toString() ?: "") }
+    //var pesoEsperado by remember(tratamiento.idProgramacion) { mutableStateOf(tratamiento.pesoEsperadoGramos?.toString() ?: "") }
     var activo by remember(tratamiento.idProgramacion) { mutableStateOf(tratamiento.activo ?: true) }
     var guardando by remember { mutableStateOf(false) }
     var expandedCompartimento by remember { mutableStateOf(false) }
@@ -615,18 +610,7 @@ private fun FormularioEditarTratamiento(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text("Peso esperado (gramos)")
-            OutlinedTextField(
-                value = pesoEsperado,
-                onValueChange = { pesoEsperado = it },
-                placeholder = { Text("0.50") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = COLOR_PRINCIPAL,
-                    unfocusedBorderColor = COLOR_PRINCIPAL
-                )
-            )
+
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -696,7 +680,7 @@ private fun FormularioEditarTratamiento(
                             idDetalleReceta = tratamiento.idDetalleReceta, // fijo: no cambia
                             idCompartimento = compartimentoSeleccionado!!.idCompartimento,
                             horaInicio = horaInicio.trim().ifBlank { null },
-                            pesoEsperadoGramos = pesoEsperado.toDoubleOrNull(),
+                           // pesoEsperadoGramos = pesoEsperado.toDoubleOrNull(),
                             diaInicio = diaInicio.trim().ifBlank { null },
                             diaFin = null,
                             activo = activo
@@ -740,8 +724,8 @@ private fun CamposTratamiento(
     onHoraInicioChange: (String) -> Unit,
     diaInicio: String,
     onDiaInicioChange: (String) -> Unit,
-    pesoEsperado: String,
-    onPesoEsperadoChange: (String) -> Unit,
+    // pesoEsperado: String,
+   // onPesoEsperadoChange: (String) -> Unit,
     activo: Boolean,
     onActivoChange: (Boolean) -> Unit
 ) {
@@ -895,18 +879,6 @@ private fun CamposTratamiento(
 
     Spacer(modifier = Modifier.height(12.dp))
 
-    Text("Peso esperado (gramos)")
-    OutlinedTextField(
-        value = pesoEsperado,
-        onValueChange = onPesoEsperadoChange,
-        placeholder = { Text("0.50") },
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = COLOR_PRINCIPAL,
-            unfocusedBorderColor = COLOR_PRINCIPAL
-        )
-    )
 
     Spacer(modifier = Modifier.height(12.dp))
 
