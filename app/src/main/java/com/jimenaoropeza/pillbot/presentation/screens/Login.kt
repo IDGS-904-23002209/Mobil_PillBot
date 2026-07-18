@@ -4,12 +4,16 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,17 +34,19 @@ import com.jimenaoropeza.pillbot.viewmodel.AuthViewModel
 import com.jimenaoropeza.pillbot.ui.theme.BlueSky
 import com.jimenaoropeza.pillbot.ui.theme.GrayLight
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Login(
     viewModel: AuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     onForgotPasswordClick: () -> Unit,
-    onLoginSuccess: (Int, String) -> Unit, // <-- Ahora también entrega el nombre
+    onLoginSuccess: (Int, String) -> Unit,
     onRegisterClick: () -> Unit
 ) {
     var usernameOrEmail by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+
+    val scrollState = rememberScrollState()
 
     Box(
         modifier = Modifier
@@ -59,14 +65,16 @@ fun Login(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .padding(24.dp)
+                // CORREGIDO: Se añade el modificador verticalScroll para soportar el desplazamiento
+                .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(bottom = 32.dp)
+                modifier = Modifier.padding(bottom = 32.dp, top = 16.dp)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.logopastillero),
@@ -138,16 +146,25 @@ fun Login(
                     value = password,
                     onValueChange = { password = it },
                     placeholder = { Text("********", color = GrayLight) },
-                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = GrayLight) },
-                    trailingIcon = {
+                    leadingIcon = {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_visibility_off),
-                            contentDescription = "Ocultar contraseña",
-                            tint = GrayLight,
-                            modifier = Modifier.size(24.dp)
+                            Icons.Default.Lock,
+                            contentDescription = null,
+                            tint = GrayLight
                         )
                     },
-                    visualTransformation = PasswordVisualTransformation(),
+                    trailingIcon = {
+                        // CORREGIDO: Cambio de estado correcto y uso de iconos nativos de material
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(
+                                imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
+                                tint = GrayLight,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                    },
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
@@ -155,7 +172,7 @@ fun Login(
                         focusedContainerColor = Color.White,
                         unfocusedContainerColor = Color.White,
                         focusedBorderColor = Color(0xFF59CBA2),
-                        unfocusedBorderColor = GrayLight
+                        unfocusedBorderColor = Color(0xFF59CBA2)
                     )
                 )
             }
@@ -184,7 +201,6 @@ fun Login(
                 onClick = {
                     if (usernameOrEmail.isNotEmpty() && password.isNotEmpty()) {
                         viewModel.iniciarSesion(usernameOrEmail, password) {
-                            // Usamos directamente los datos ya guardados en el ViewModel
                             onLoginSuccess(viewModel.usuarioId, viewModel.usuarioNombre)
                         }
                     }
@@ -209,7 +225,7 @@ fun Login(
 
             Row(
                 horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
             ) {
                 Text(text = "¿No tienes una cuenta? ", color = Color.Black, fontSize = 14.sp)
                 Text(

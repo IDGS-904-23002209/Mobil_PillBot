@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,21 +38,19 @@ fun PillBotNavigation(
     val recordatorioViewModel: RecordatorioViewModel = viewModel()
     val compartimentoViewModel: CompartimentoViewModel = viewModel()
 
-    // ESTADO REAL del usuario en sesión (esto es lo que cambia al hacer login)
-// ESTADO REAL del usuario en sesión (esto es lo que cambia al hacer login)
-    var usuarioId by remember { mutableStateOf(usuarioIdInicial) }
-    var nombreUsuario by remember { mutableStateOf("Usuario") }
+    // 🟢 CORREGIDO: Ambas variables ahora usan rememberSaveable para asegurar el ID de sesión
+    var usuarioId by rememberSaveable { mutableStateOf(usuarioIdInicial) }
+    var nombreUsuario by rememberSaveable { mutableStateOf("Usuario") }
 
     // Monitorea la ruta actual de navegación
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    // Efecto lanzado globalmente para actualizar
-    // el contador de notificaciones pendientes
+    // Efecto lanzado globalmente para actualizar el contador de notificaciones pendientes
     LaunchedEffect(usuarioId) {
-        tomaHoyViewModel.cargarTomasHoy(
-            usuarioId = usuarioId
-        )
+        if (usuarioId > 0) {
+            tomaHoyViewModel.cargarTomasHoy(usuarioId = usuarioId)
+        }
     }
 
     val tomasHoy by tomaHoyViewModel.tomasHoy
@@ -92,84 +91,55 @@ fun PillBotNavigation(
                     )
 
                     navIcons.forEachIndexed { index, iconRes ->
-
-                        val routeTarget =
-                            routes.getOrNull(index)
-                                ?: Screen.Inicio.route
-
-                        val isSelected =
-                            currentRoute == routeTarget
+                        val routeTarget = routes.getOrNull(index) ?: Screen.Inicio.route
+                        val isSelected = currentRoute == routeTarget
 
                         NavigationBarItem(
                             selected = isSelected,
-
                             onClick = {
                                 if (currentRoute != routeTarget) {
                                     navController.navigate(routeTarget) {
                                         popUpTo(Screen.Inicio.route) {
                                             saveState = true
                                         }
-
                                         launchSingleTop = true
                                         restoreState = true
                                     }
                                 }
                             },
-
                             icon = {
-                                Box(
-                                    modifier = Modifier.wrapContentSize()
-                                ) {
+                                Box(modifier = Modifier.wrapContentSize()) {
                                     Image(
-                                        painter = painterResource(
-                                            id = iconRes
-                                        ),
+                                        painter = painterResource(id = iconRes),
                                         contentDescription = null,
                                         modifier = Modifier.size(32.dp)
                                     )
 
-                                    if (
-                                        index == 1 &&
-                                        tomasPendientes > 0
-                                    ) {
+                                    if (index == 1 && tomasPendientes > 0) {
                                         Box(
                                             modifier = Modifier
                                                 .size(16.dp)
-                                                .background(
-                                                    Color.Red,
-                                                    shape = RoundedCornerShape(
-                                                        8.dp
-                                                    )
-                                                )
-                                                .align(
-                                                    Alignment.TopEnd
-                                                ),
-                                            contentAlignment =
-                                                Alignment.Center
+                                                .background(Color.Red, shape = RoundedCornerShape(8.dp))
+                                                .align(Alignment.TopEnd),
+                                            contentAlignment = Alignment.Center
                                         ) {
                                             Text(
-                                                text =
-                                                    tomasPendientes.toString(),
+                                                text = tomasPendientes.toString(),
                                                 color = Color.White,
                                                 fontSize = 9.sp,
-                                                fontWeight =
-                                                    FontWeight.Bold
+                                                fontWeight = FontWeight.Bold
                                             )
                                         }
                                     }
                                 }
                             },
-
-                            colors =
-                                NavigationBarItemDefaults.colors(
-                                    indicatorColor =
-                                        if (isSelected) {
-                                            Color(0xFF59CBA2)
-                                                .copy(alpha = 0.3f)
-                                        } else {
-                                            Color.Transparent
-                                        }
-                                )
+                            colors = NavigationBarItemDefaults.colors(
+                                indicatorColor = if (isSelected) {
+                                    Color(0xFF59CBA2).copy(alpha = 0.3f)
+                                } else {
+                                    Color.Transparent
+                                }
+                            )
                         )
                     }
                 }
@@ -183,35 +153,24 @@ fun PillBotNavigation(
                 .background(Color.White)
                 .padding(paddingValues)
         ) {
-
             // Encabezado superior de PillBot
             if (mostrarBarrasGlobales) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp),
-                    horizontalAlignment =
-                        Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Spacer(
-                        modifier = Modifier.height(16.dp)
-                    )
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    Row(
-                        verticalAlignment =
-                            Alignment.CenterVertically
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Image(
-                            painter = painterResource(
-                                R.drawable.logopastillero
-                            ),
+                            painter = painterResource(R.drawable.logopastillero),
                             contentDescription = null,
                             modifier = Modifier.size(55.dp)
                         )
 
-                        Spacer(
-                            modifier = Modifier.width(10.dp)
-                        )
+                        Spacer(modifier = Modifier.width(10.dp))
 
                         Text(
                             text = "PILLBOT",
@@ -219,10 +178,7 @@ fun PillBotNavigation(
                             fontWeight = FontWeight.Bold
                         )
                     }
-
-                    Spacer(
-                        modifier = Modifier.height(10.dp)
-                    )
+                    Spacer(modifier = Modifier.height(10.dp))
                 }
             }
 
@@ -231,190 +187,89 @@ fun PillBotNavigation(
                 startDestination = Screen.Login.route,
                 modifier = Modifier.weight(1f)
             ) {
-
                 // LOGIN
-                composable(
-                    route = Screen.Login.route
-                ) {
+                composable(route = Screen.Login.route) {
                     Login(
-                        onForgotPasswordClick = {
-                            navController.navigate(
-                                "restaurar"
-                            )
-                        },
-
+                        onForgotPasswordClick = { navController.navigate("restaurar") },
                         onLoginSuccess = { idObtenido, nombreObtenido ->
-                            usuarioId = idObtenido           // 👈 ID correcto
-                            nombreUsuario = nombreObtenido   // 👈 Nombre correcto
-
-                            navController.navigate(
-                                Screen.Inicio.route
-                            ) {
-                                popUpTo(
-                                    Screen.Login.route
-                                ) {
-                                    inclusive = true
-                                }
+                            usuarioId = idObtenido
+                            nombreUsuario = nombreObtenido
+                            navController.navigate(Screen.Inicio.route) {
+                                popUpTo(Screen.Login.route) { inclusive = true }
                             }
                         },
-
-                        onRegisterClick = {
-                            navController.navigate(
-                                "registrarse"
-                            )
-                        }
+                        onRegisterClick = { navController.navigate("registrarse") }
                     )
                 }
 
                 // REGISTRO
-                composable(
-                    route = "registrarse"
-                ) {
+                composable(route = "registrarse") {
                     Registrarse(
-                        onBackToLoginClick = {
-                            navController.popBackStack()
-                        },
-
-                        onRegisterSuccessClick = {
-                            navController.navigate(
-                                Screen.Login.route
-                            )
-                        }
+                        onBackToLoginClick = { navController.popBackStack() },
+                        onRegisterSuccessClick = { navController.navigate(Screen.Login.route) }
                     )
                 }
 
                 // INICIO
-                composable(
-                    route = Screen.Inicio.route
-                ) {
+                composable(route = Screen.Inicio.route) {
                     Inicio(
                         usuarioId = usuarioId,
                         nombreUsuario = nombreUsuario,
-
-                        onIrANotificaciones = {
-                            navController.navigate(
-                                Screen.Notificaciones.route
-                            )
-                        },
-
-                        onIrACalendario = {
-                            navController.navigate(
-                                Screen.Calendario.route
-                            )
-                        },
-
-                        onIrATratamiento = {
-                            navController.navigate(
-                                Screen.Tratamiento.route
-                            )
-                        },
-
-                        onIrAProgramacion = {
-                            navController.navigate(
-                                Screen.ProgramacionTratamiento.route
-                            )
-                        },
-
+                        onIrANotificaciones = { navController.navigate(Screen.Notificaciones.route) },
+                        onIrACalendario = { navController.navigate(Screen.Calendario.route) },
+                        onIrATratamiento = { navController.navigate(Screen.Tratamiento.route) },
+                        onIrAProgramacion = { navController.navigate(Screen.ProgramacionTratamiento.route) },
                         viewModel = tomaHoyViewModel
                     )
                 }
 
                 // HISTORIAL DE MEDICAMENTOS
-                composable(
-                    route = "historialMedicamento"
-                ) {
-                    val listaMedicamentos by
-                    medicamentoViewModel.medicamentos
+                composable(route = "historialMedicamento") {
+                    val listaMedicamentos by medicamentoViewModel.medicamentos
 
+                    // 🛡️ CORREGIDO: Lanzar solo si el ID de usuario es válido
                     LaunchedEffect(usuarioId) {
-                        medicamentoViewModel
-                            .cargarMedicamentos(
-                                usuarioId
-                            )
+                        if (usuarioId > 0) {
+                            medicamentoViewModel.cargarMedicamentos(usuarioId)
+                        }
                     }
 
                     InventarioMedicamentosScreen(
                         medicamentos = listaMedicamentos,
-
-                        onMedicamentoClick = {
-                                medicamento ->
-
-                            medicamentoViewModel
-                                .medicamentoSeleccionado =
-                                medicamento
-
-                            navController.navigate(
-                                "detalleMedicamento"
-                            )
+                        onMedicamentoClick = { medicamento ->
+                            medicamentoViewModel.medicamentoSeleccionado = medicamento
+                            navController.navigate("detalleMedicamento")
                         },
-
-                        onVerCompartimentos = {
-                            navController.navigate(
-                                "compartimentos"
-                            )
-                        }
+                        onVerCompartimentos = { navController.navigate("compartimentos") }
                     )
                 }
 
                 // PANTALLA DE COMPARTIMENTOS
-                composable(
-                    route = "compartimentos"
-                ) {
-                    val listaCompartimentos by
-                    compartimentoViewModel
-                        .compartimentos
-
-                    val estaCargando by
-                    compartimentoViewModel
-                        .cargando
+                composable(route = "compartimentos") {
+                    val listaCompartimentos by compartimentoViewModel.compartimentos
+                    val estaCargando by compartimentoViewModel.cargando
 
                     LaunchedEffect(usuarioId) {
-                        compartimentoViewModel
-                            .cargarCompartimentosUsuario(
-                                idUsuario =
-                                    usuarioId
-                            )
+                        if (usuarioId > 0) {
+                            compartimentoViewModel.cargarCompartimentosUsuario(idUsuario = usuarioId)
+                        }
                     }
 
                     CompartimentosScreen(
-                        compartimentos =
-                            listaCompartimentos,
-
-                        cargando =
-                            estaCargando,
-
-                        onVolver = {
-                            navController
-                                .popBackStack()
-                        }
+                        compartimentos = listaCompartimentos,
+                        cargando = estaCargando,
+                        onVolver = { navController.popBackStack() }
                     )
                 }
 
                 // DETALLE DE MEDICAMENTO
-                composable(
-                    route = "detalleMedicamento"
-                ) {
-                    val medicamentoSeleccionado =
-                        medicamentoViewModel
-                            .medicamentoSeleccionado
-
-                    if (
-                        medicamentoSeleccionado != null
-                    ) {
+                composable(route = "detalleMedicamento") {
+                    val medicamentoSeleccionado = medicamentoViewModel.medicamentoSeleccionado
+                    if (medicamentoSeleccionado != null) {
                         DetalleMedicamento(
-                            medicamento =
-                                medicamentoSeleccionado,
-
-                            onVolver = {
-                                navController
-                                    .popBackStack()
-                            },
-
-                            onRecargarClick = {
-                                navController.navigate(
-                                    "recargarMedicamento"
-                                )
-                            }
+                            medicamento = medicamentoSeleccionado,
+                            onVolver = { navController.popBackStack() },
+                            onRecargarClick = { navController.navigate("recargarMedicamento") }
                         )
                     } else {
                         navController.popBackStack()
@@ -422,77 +277,41 @@ fun PillBotNavigation(
                 }
 
                 // CALENDARIO
-                composable(
-                    route = Screen.Calendario.route
-                ) {
+                composable(route = Screen.Calendario.route) {
                     PillBotCalendarScreen(
-                        usuarioId =
-                            usuarioId,
-
-                        onVolver = {
-                            navController
-                                .popBackStack()
-                        }
+                        usuarioId = usuarioId,
+                        onVolver = { navController.popBackStack() }
                     )
                 }
 
                 // NOTIFICACIONES
-                composable(
-                    route =
-                        Screen.Notificaciones.route
-                ) {
+                composable(route = Screen.Notificaciones.route) {
                     Notificaciones(
-                        usuarioId =
-                            usuarioId,
-
-                        onVolver = {
-                            navController
-                                .popBackStack()
-                        },
-
-                        viewModel =
-                            tomaHoyViewModel
+                        usuarioId = usuarioId,
+                        onVolver = { navController.popBackStack() },
+                        viewModel = tomaHoyViewModel
                     )
                 }
 
                 // CONTROL DE EMERGENCIA
-                composable(
-                    route = "controlEmergencia"
-                ) {
+                composable(route = "controlEmergencia") {
                     ControlEmergencia()
                 }
 
                 // DETALLE DEL EVENTO
-                composable(
-                    route = "detalleEvento"
-                ) {
+                composable(route = "detalleEvento") {
                     PillBotEventDetailScreen(
-                        onVolver = {
-                            navController
-                                .popBackStack()
-                        }
+                        onVolver = { navController.popBackStack() }
                     )
                 }
 
                 // RECARGAR MEDICAMENTO
-                composable(
-                    route = "recargarMedicamento"
-                ) {
-                    val medicamentoSeleccionado =
-                        medicamentoViewModel
-                            .medicamentoSeleccionado
-
-                    if (
-                        medicamentoSeleccionado != null
-                    ) {
+                composable(route = "recargarMedicamento") {
+                    val medicamentoSeleccionado = medicamentoViewModel.medicamentoSeleccionado
+                    if (medicamentoSeleccionado != null) {
                         RecargarMedicamento(
-                            medicamento =
-                                medicamentoSeleccionado,
-
-                            onVolver = {
-                                navController
-                                    .popBackStack()
-                            }
+                            medicamento = medicamentoSeleccionado,
+                            onVolver = { navController.popBackStack() }
                         )
                     } else {
                         navController.popBackStack()
@@ -500,60 +319,32 @@ fun PillBotNavigation(
                 }
 
                 // PROGRAMACIÓN DE TRATAMIENTO
-                composable(
-                    route =
-                        Screen.ProgramacionTratamiento.route
-                ) {
+                composable(route = Screen.ProgramacionTratamiento.route) {
                     RegistrarTratamiento(
-                        usuarioId =
-                            usuarioId,
-
-                        onVolver = {
-                            navController
-                                .popBackStack()
-                        },
-
-                        onGuardadoExitoso = {
-                            navController
-                                .popBackStack()
-                        }
+                        usuarioId = usuarioId,
+                        onVolver = { navController.popBackStack() },
+                        onGuardadoExitoso = { navController.popBackStack() }
                     )
                 }
 
                 // PERFIL
-                composable(
-                    route = Screen.Perfil.route
-                ) {
+                composable(route = Screen.Perfil.route) {
                     ConfiguracionPerfil(
-                        usuarioId =
-                            usuarioId,
-
+                        usuarioId = usuarioId,
                         onCerrarSesion = {
-                            navController.navigate(
-                                Screen.Login.route
-                            ) {
-                                popUpTo(0) {
-                                    inclusive = true
-                                }
+                            // Al cerrar sesión limpiamos los estados explícitamente
+                            usuarioId = -1
+                            nombreUsuario = "Usuario"
+                            navController.navigate(Screen.Login.route) {
+                                popUpTo(0) { inclusive = true }
                             }
                         }
                     )
                 }
 
-                composable(
-                    route = "restaurar"
-                ) {
-                }
-
-                composable(
-                    route = "verificar"
-                ) {
-                }
-
-                composable(
-                    route = "restablecer"
-                ) {
-                }
+                composable(route = "restaurar") {}
+                composable(route = "verificar") {}
+                composable(route = "restablecer") {}
             }
         }
     }

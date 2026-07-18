@@ -176,7 +176,10 @@ fun Inicio(
                     toma = toma,
                     onTomarClick = {
                         // Pasamos el ID único de la toma al ViewModel
-                        viewModel.marcarComoTomado(usuarioId = usuarioId, idToma = toma.id_toma)
+                        viewModel.marcarComoTomado(
+                            usuarioId = usuarioId,
+                            idToma = toma.id_toma ?: 0,
+                        )
                     }
                 )
                 Spacer(modifier = Modifier.height(12.dp))

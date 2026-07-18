@@ -94,14 +94,14 @@ fun InventarioMedicamentosScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Filtrado en tiempo real desde la barra de búsqueda
-        medicamentos.filter { it.nombre_medicamento.contains(query, ignoreCase = true) }.forEach { medicamento ->
+        // ¡CORREGIDO!: Mapeo de campos adaptado al formato exacto de las llaves del JSON de la API
+        medicamentos.filter { it.nombreMedicamento.contains(query, ignoreCase = true) }.forEach { medicamento ->
             MedicamentoCard(
-                nombre = "${medicamento.nombre_medicamento} ${medicamento.gramaje_medicamento}",
-                cantidad = "${medicamento.inventario_actual} unidades",
-                proximaToma = "Pendiente",
-                stock = if (medicamento.inventario_actual > 5) "Stock suficiente" else "Stock bajo",
-                stockColor = if (medicamento.inventario_actual > 5) Color(0xFF59CBA2) else Color(0xFFFF9800),
+                nombre = "${medicamento.nombreMedicamento} (${medicamento.principioActivo})",
+                cantidad = "${medicamento.inventarioActual} unidades",
+                proximaToma = "Compartimento ${medicamento.numeroCompartimento} (${medicamento.estadoCompartimento})",
+                stock = if (medicamento.inventarioActual > 5) "Stock suficiente" else "Stock bajo",
+                stockColor = if (medicamento.inventarioActual > 5) Color(0xFF59CBA2) else Color(0xFFFF9800),
                 onClick = { onMedicamentoClick(medicamento) }
             )
             Spacer(modifier = Modifier.height(10.dp))
@@ -141,7 +141,7 @@ fun MedicamentoCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = nombre, fontWeight = FontWeight.Bold, color = Color(0xFF1D2A44))
                 Text(text = cantidad, fontSize = 12.sp, color = Color.Gray)
-                Text(text = "Próxima toma: $proximaToma", fontSize = 12.sp, color = Color.Gray)
+                Text(text = proximaToma, fontSize = 12.sp, color = Color.Gray)
                 Text(text = stock, color = stockColor, fontWeight = FontWeight.Bold, fontSize = 12.sp)
             }
 
@@ -154,8 +154,6 @@ fun MedicamentoCard(
     }
 }
 
-
-// 2. FORMULARIO MANUAL DE REGISTRO
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormularioManual(
@@ -180,6 +178,9 @@ fun FormularioManual(
     val frecuencias = listOf("Cada 4 horas", "Cada 6 horas", "Cada 8 horas", "Cada 12 horas", "Una vez al día")
     var expanded by remember { mutableStateOf(false) }
     var frecuenciaSeleccionada by remember { mutableStateOf("Seleccionar frecuencia") }
+
+    // Cambiar por el ID del usuario actual que inició sesión (por ejemplo: el usuario 3 para tus pruebas)
+    val usuarioIdPruebas = 3
 
     Column(
         modifier = Modifier
@@ -472,7 +473,7 @@ fun FormularioManual(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // BOTÓN: ACCIÓN DE GUARDADO REMOTO
+        // BOTÓN: ACCIÓN DE GUARDADO REMOTO CORREGIDO
         Button(
             onClick = {
                 val medicamento = MedicamentoRequest(
@@ -484,11 +485,9 @@ fun FormularioManual(
                     gramaje = dosis.trim(),
                     fabricante = "Genérico",
                     requiereReceta = false,
-                    idUsuario = 5
+                    idUsuario = usuarioIdPruebas
                 )
 
-                // Cambiado de: { exito: Boolean -> ... }
-                // Cambiado a: { exito, idMedicamientoCreado -> ... }
                 viewModel.guardarMedicamento(medicamento) { exito: Boolean, idMedicamientoCreado: Int? ->
                     if (exito) {
                         val frecuenciaHoras = when (frecuenciaSeleccionada) {
@@ -501,9 +500,8 @@ fun FormularioManual(
                         }
 
                         val recordatorio = RecordatorioRequest(
-                            id_usuario = 5,
-                            id_medicamento = idMedicamientoCreado
-                                ?: 0, // Usamos el ID devuelto por el servidor
+                            id_usuario = usuarioIdPruebas,
+                            id_medicamento = idMedicamientoCreado ?: 0,
                             hora_toma = horaPrimeraToma,
                             frecuencia_horas = frecuenciaHoras,
                             dosis = unidades,

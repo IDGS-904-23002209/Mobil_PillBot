@@ -1,5 +1,6 @@
 package com.jimenaoropeza.pillbot.repository
 
+import android.util.Log
 import com.jimenaoropeza.pillbot.data.modelo.HistorialRequest
 import com.jimenaoropeza.pillbot.modelo.TomaHoy
 import com.jimenaoropeza.pillbot.network.ApiService
@@ -12,8 +13,15 @@ class TomaHoyRepository {
 
     suspend fun obtenerTomasHoy(usuarioId: Int): List<TomaHoy> {
         return try {
-            apiService.obtenerTomasHoy(usuarioId)
+            val resultado = apiService.obtenerTomasHoy(usuarioId)
+
+            // Log de control para verificar la conexión directa a producción
+            Log.d("PILLBOT_API", "Petición realizada para el usuarioId: $usuarioId")
+            Log.d("PILLBOT_API", "Número de registros reales devueltos por la nube: ${resultado.size}")
+
+            resultado
         } catch (e: Exception) {
+            Log.e("PILLBOT_API", "Error crítico en la llamada de red: ${e.message}")
             e.printStackTrace()
             emptyList()
         }
@@ -22,14 +30,9 @@ class TomaHoyRepository {
     suspend fun marcarMedicamentoTomado(idToma: Int): Boolean {
         return try {
             val ahora = LocalDateTime.now()
-
-            // Formateamos la fecha a ISO8601 básica para el backend: ej. "2026-07-14T10:30:00Z"
             val fechaFormateada = ahora.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "Z"
-
-            // Formateamos la hora en un esquema estricto de TimeSpan (HH:mm:ss): ej. "10:30:00"
             val horaFormateada = ahora.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
 
-            // CORREGIDO: Usamos las minúsculas exactas del modelo HistorialRequest
             val historialRequest = HistorialRequest(
                 idToma = idToma,
                 fechaReal = fechaFormateada,
@@ -39,7 +42,6 @@ class TomaHoyRepository {
                 confirmadaPorIr = false
             )
 
-            // Consumimos el endpoint corregido de tu ApiService
             val respuesta = apiService.registrarToma(historialRequest)
             respuesta.isSuccessful
         } catch (e: Exception) {

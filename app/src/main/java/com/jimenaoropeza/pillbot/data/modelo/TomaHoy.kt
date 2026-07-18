@@ -3,35 +3,38 @@ package com.jimenaoropeza.pillbot.modelo
 import com.google.gson.annotations.SerializedName
 
 data class TomaHoy(
-    @SerializedName("id_toma")
-    val id_toma: Int,
+    @SerializedName("idToma")
+    val id_toma: Int?, // Cambiado a Int? porque la API lo manda null inicialmente
 
-    // Se mapea al campo de fecha/hora programada de tu Set 2
-    @SerializedName("fecha_programada")
-    val fecha_programada: String?,
+    @SerializedName("idProgramacion")
+    val idProgramacion: Int, // Agregado porque lo necesitaremos para registrar la toma
 
-    @SerializedName("nombre_medicamento")
+    @SerializedName("horaToma")
+    val fecha_programada: String?, // Mapeado directamente a tu propiedad de la UI
+
+    @SerializedName("nombreMedicamento")
     val nombre_medicamento: String?,
-
 
     @SerializedName("dosis")
     val dosis: String?,
 
-    @SerializedName("estado")
-    val estado: String?
-) {
-    // Propiedad calculada en Kotlin para saber si ya se tomó sin alterar el tipo de dato que viene de SQL
-    val tomado: Boolean
-        get() = estado?.equals("Tomado", ignoreCase = true) == true
+    @SerializedName("tomado")
+    val estado: Boolean?, // Cambiado a Boolean porque la API manda true/false directamente
 
-    // Formateador rápido para mostrar solo la hora en la interfaz
+    @SerializedName("numeroCompartimento")
+    val numeroCompartimento: Int?
+) {
+    // Retorna si ya fue tomado basándose en el booleano real de tu API
+    val tomado: Boolean
+        get() = estado == true
+
+    // Como tu API ya te manda la hora limpia ("20:15:54"), solo tomamos los primeros 5 caracteres
     val hora_toma: String
         get() {
-            if (fecha_programada == null) return "--:--"
+            if (fecha_programada.isNullOrBlank()) return "--:--"
             return try {
-                // Si viene como "7/14/2026 12:00:00 AM", extraemos la hora
-                if (fecha_programada.contains(" ")) {
-                    fecha_programada.substringAfter(" ")
+                if (fecha_programada.contains(":")) {
+                    fecha_programada.substring(0, 5) // Corta "20:15:54" y lo deja en "20:15"
                 } else {
                     fecha_programada
                 }

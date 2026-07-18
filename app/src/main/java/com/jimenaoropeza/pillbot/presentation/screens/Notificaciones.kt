@@ -196,7 +196,7 @@ fun NotificationCard(
                             val timestampActual = java.time.Instant.now().toString()
 
                             val historial = HistorialRequest(
-                                idToma = toma.id_toma,
+                                idToma = toma.id_toma ?: 0,
                                 fechaReal = LocalDate.now().toString() + "Z", // Formato ISO básico
                                 horaReal = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")),
                                 estatus = "Tomado"

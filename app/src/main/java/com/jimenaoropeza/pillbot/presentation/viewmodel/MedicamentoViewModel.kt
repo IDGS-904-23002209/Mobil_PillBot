@@ -50,10 +50,17 @@ class MedicamentoViewModel : ViewModel() {
 
 
     fun cargarMedicamentos(usuarioId: Int) {
+        // 🛡️ CANDADO: Si el id es -1 o menor, no dispares la petición a la API
+        if (usuarioId <= 0) {
+            Log.w("MEDICAMENTOS_API", "Intento de cargar medicamentos abortado: ID de usuario inválido ($usuarioId)")
+            return
+        }
+
         viewModelScope.launch {
             try {
                 val lista = repository.obtenerMedicamentos(usuarioId)
-                Log.d("MEDICAMENTOS_API", lista.toString())
+                Log.d("MEDICAMENTOS_API", "Petición realizada para el usuarioId: $usuarioId")
+                Log.d("MEDICAMENTOS_API", "Número de registros reales devueltos por la nube: ${lista.size}")
                 medicamentos.value = lista
             } catch (e: Exception) {
                 Log.e("MEDICAMENTOS_API", "Error: ${e.message}")
@@ -63,45 +70,28 @@ class MedicamentoViewModel : ViewModel() {
     }
 
     fun registrarMedicamentoCatalogo(
-        request: CatalogoMedicamentoRequest,
-        onResult: (Boolean, String) -> Unit
+        request: CatalogoMedicamentoRequest, onResult: (Boolean, String) -> Unit
     ) {
         viewModelScope.launch {
-
             try {
                 val respuesta = repository.registrarMedicamentoCatalogo(request)
-
                 if (respuesta.isSuccessful) {
-
                     registroExitoso.value = true
-
                     onResult(
-                        true,
-                        respuesta.body()?.mensaje ?: "Medicamento registrado correctamente."
+                        true, respuesta.body()?.mensaje ?: "Medicamento registrado correctamente."
                     )
-
                 } else {
-
                     registroExitoso.value = false
-
                     onResult(
-                        false,
-                        "Error del servidor: ${respuesta.code()}"
+                        false, "Error del servidor: ${respuesta.code()}"
                     )
-
                 }
-
             } catch (e: Exception) {
-
                 registroExitoso.value = false
-
                 onResult(
-                    false,
-                    e.message ?: "Error desconocido"
+                    false, e.message ?: "Error desconocido"
                 )
-
             }
-
         }
     }
 

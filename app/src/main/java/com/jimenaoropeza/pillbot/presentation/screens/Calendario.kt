@@ -36,11 +36,11 @@ import java.util.Locale
 enum class CalendarView { DIA, SEMANA, MES, LISTA }
 
 val datosEjemploHoy = listOf(
-    TomaHoy(1, "08:00", "Paracetamol", "500mg", "Tomado"),
-    TomaHoy(2, "10:30", "Ibuprofeno", "400mg", "Pendiente"),
-    TomaHoy(3, "14:00", "Omeprazol", "20mg", "Tomado"),
-    TomaHoy(4, "20:00", "Losartán", "50mg", "Pendiente"),
-    TomaHoy(5, "22:00", "Metformina", "850mg", "Pendiente")
+    TomaHoy(id_toma = 1, idProgramacion = 101, fecha_programada = "08:00:00", nombre_medicamento = "Paracetamol", dosis = "500mg", estado = true, numeroCompartimento = 1),
+    TomaHoy(id_toma = null, idProgramacion = 102, fecha_programada = "10:30:00", nombre_medicamento = "Ibuprofeno", dosis = "400mg", estado = false, numeroCompartimento = 2),
+    TomaHoy(id_toma = 3, idProgramacion = 103, fecha_programada = "14:00:00", nombre_medicamento = "Omeprazol", dosis = "20mg", estado = true, numeroCompartimento = 3),
+    TomaHoy(id_toma = null, idProgramacion = 104, fecha_programada = "20:00:00", nombre_medicamento = "Losartán", dosis = "50mg", estado = false, numeroCompartimento = 4),
+    TomaHoy(id_toma = null, idProgramacion = 105, fecha_programada = "22:00:00", nombre_medicamento = "Metformina", dosis = "850mg", estado = false, numeroCompartimento = 1)
 )
 
 @Composable
@@ -1001,8 +1001,7 @@ fun ListView(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(modifier = Modifier.size(10.dp).background(Color(0xFFFF9800), CircleShape))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    "Pendientes: $pendientesSemana", fontSize = 12.sp, color = Color(0xFFFF9800))
+                Text("Pendientes: $pendientesSemana", fontSize = 12.sp, color = Color(0xFFFF9800))
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Total: ${tomasSemanaActual.size}", fontSize = 12.sp, color = Color.Gray)
@@ -1029,10 +1028,10 @@ fun ListView(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            if (isExpanded) {
-                                expandedWeeks = expandedWeeks - index
+                            expandedWeeks = if (isExpanded) {
+                                expandedWeeks - index
                             } else {
-                                expandedWeeks = expandedWeeks + index
+                                expandedWeeks + index
                             }
                         }
                         .padding(12.dp)
@@ -1212,13 +1211,21 @@ fun ListView(
                                     if (!toma.tomado) {
                                         Button(
                                             onClick = {
-                                                // CORREGIDO: Nombres de variables alineados al modelo HistorialRequest
+                                                // Generamos la fecha en formato ISO básico y la hora actual
+                                                val fechaActual = LocalDate.now().toString() + "T00:00:00"
+                                                val horaActual = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+
+                                                // CORREGIDO: Mapeo exacto a las propiedades de tu data class HistorialRequest
                                                 val historial = HistorialRequest(
-                                                    idToma = toma.id_toma,
-                                                    fechaReal = LocalDate.now().toString() + "Z", // Formato ISO básico
-                                                    horaReal = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")),
-                                                    estatus = "Tomado"
+                                                    idToma = 0, // Se envía 0 porque es un nuevo registro en el historial
+                                                    fechaReal = fechaActual,
+                                                    horaReal = horaActual,
+                                                    estatus = "Tomado",
+                                                    pesoDetectado = 0.0,
+                                                    confirmadaPorIr = false,
+                                                    idDetalleTratamiento = null // Lo dejamos nulo opcional tal como lo definiste
                                                 )
+
                                                 historialViewModel.marcarTomaComoRealizada(
                                                     historial = historial,
                                                     onSuccess = onTomaRegistrada

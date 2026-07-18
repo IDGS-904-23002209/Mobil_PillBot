@@ -10,6 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 import com.jimenaoropeza.pillbot.presentation.components.NotificationHelper
@@ -42,8 +43,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
 
-            // -1 significa "todavía no hay sesión iniciada"
-            var usuarioIdDinamico by remember { mutableStateOf(-1) }
+            // 🟢 CORREGIDO: Se cambia remember por rememberSaveable para sobrevivir a la destrucción de la Activity
+            var usuarioIdDinamico by rememberSaveable { mutableStateOf(-1) }
 
             PillBotNavigation(
                 navController = navController,
