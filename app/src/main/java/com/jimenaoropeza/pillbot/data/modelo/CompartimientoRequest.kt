@@ -1,7 +1,5 @@
 package com.jimenaoropeza.pillbot.data.modelo
 
-
-
 import com.google.gson.annotations.SerializedName
 
 data class CompartimentoRequest(
@@ -10,5 +8,10 @@ data class CompartimentoRequest(
     @SerializedName("numeroCompartimento") val numeroCompartimento: Int,
     @SerializedName("capacidadMaximaPastillas") val capacidadMaximaPastillas: Int,
     @SerializedName("cantidadActualPastillas") val cantidadActualPastillas: Int,
-    @SerializedName("estado") val estado: String?
+    @SerializedName("estado") val estado: String?,
+    @SerializedName("nombreMedicamento") val nombreMedicamento: String? = null
+)
+
+data class ActualizarCantidadRequest(
+    @SerializedName("cantidadActualPastillas") val cantidadActualPastillas: Int
 )

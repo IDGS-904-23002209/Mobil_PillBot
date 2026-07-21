@@ -66,4 +66,30 @@ class CompartimentoViewModel : ViewModel() {
             }
         }
     }
+
+    fun actualizarCantidadActual(
+        idCompartimento: Int,
+        nuevaCantidad: Int,
+        onResult: (Boolean, String) -> Unit = { _, _ -> }
+    ) {
+        viewModelScope.launch {
+            try {
+                val respuesta = repository.actualizarCantidadActual(idCompartimento, nuevaCantidad)
+                if (respuesta.isSuccessful) {
+                    // Actualiza el estado local sin necesidad de recargar todo
+                    compartimentos.value = compartimentos.value.map {
+                        if (it.idCompartimento == idCompartimento) {
+                            it.copy(cantidadActualPastillas = nuevaCantidad)
+                        } else it
+                    }
+                    onResult(true, "Cantidad actualizada correctamente.")
+                } else {
+                    onResult(false, "Error del servidor: ${respuesta.code()}")
+                }
+            } catch (e: Exception) {
+                Log.e("COMPARTIMENTO_VM", "Error al actualizar cantidad", e)
+                onResult(false, e.message ?: "Error de conexión")
+            }
+        }
+    }
 }

@@ -130,4 +130,12 @@ interface ApiService {
     suspend fun obtenerTomasHoy(
         @Path("usuario_id") usuarioId: Int
     ): List<TomaHoy>
+
+    // Agregar dentro de la interfaz ApiService existente:
+
+    @PUT("api/compartimentos/{idCompartimento}/cantidad")
+    suspend fun actualizarCantidadCompartimento(
+        @Path("idCompartimento") idCompartimento: Int,
+        @Body request: com.jimenaoropeza.pillbot.data.modelo.ActualizarCantidadRequest
+    ): Response<Unit>
 }

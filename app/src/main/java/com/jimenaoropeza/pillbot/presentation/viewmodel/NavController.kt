@@ -245,6 +245,7 @@ fun PillBotNavigation(
                 }
 
                 // PANTALLA DE COMPARTIMENTOS
+                // PANTALLA DE COMPARTIMENTOS
                 composable(route = "compartimentos") {
                     val listaCompartimentos by compartimentoViewModel.compartimentos
                     val estaCargando by compartimentoViewModel.cargando
@@ -258,7 +259,10 @@ fun PillBotNavigation(
                     CompartimentosScreen(
                         compartimentos = listaCompartimentos,
                         cargando = estaCargando,
-                        onVolver = { navController.popBackStack() }
+                        onVolver = { navController.popBackStack() },
+                        onGuardarCantidad = { idCompartimento, nuevaCantidad, onResult ->
+                            compartimentoViewModel.actualizarCantidadActual(idCompartimento, nuevaCantidad, onResult)
+                        }
                     )
                 }
 
