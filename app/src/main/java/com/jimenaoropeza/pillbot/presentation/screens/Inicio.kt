@@ -175,10 +175,11 @@ fun Inicio(
                 MedicamentItem(
                     toma = toma,
                     onTomarClick = {
-                        // Pasamos el ID único de la toma al ViewModel
                         viewModel.marcarComoTomado(
                             usuarioId = usuarioId,
                             idToma = toma.id_toma ?: 0,
+                            idProgramacion = toma.idProgramacion,
+                            horaProgramada = toma.fecha_programada ?: "00:00:00"
                         )
                     }
                 )

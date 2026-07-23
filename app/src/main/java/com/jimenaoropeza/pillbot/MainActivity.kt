@@ -1,12 +1,12 @@
 package com.jimenaoropeza.pillbot
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,17 +15,18 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 import com.jimenaoropeza.pillbot.presentation.components.NotificationHelper
 import com.jimenaoropeza.pillbot.presentation.viewmodel.PillBotNavigation
+import androidx.activity.result.contract.ActivityResultContracts
+import com.jimenaoropeza.pillbot.notificaciones.EXTRA_ABRIR_INICIO
+
 
 class MainActivity : ComponentActivity() {
 
-    // Launcher para pedir permiso de notificaciones en Android 13+
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (!isGranted) {
-            // El usuario rechazó las notificaciones, manejar de ser necesario
-        }
-    }
+    // Launcher para solicitar el permiso de notificaciones (Android 13+)
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* concedido o no */ }
+
+    // Estado que indica si debemos navegar a Inicio (por ejemplo, al tocar una notificación)
+    private val abrirInicioState = mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,16 +41,32 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        // Revisamos si la Activity se abrió desde una notificación
+        abrirInicioState.value = intent?.getBooleanExtra(EXTRA_ABRIR_INICIO, false) == true
+
         setContent {
             val navController = rememberNavController()
 
             // 🟢 CORREGIDO: Se cambia remember por rememberSaveable para sobrevivir a la destrucción de la Activity
             var usuarioIdDinamico by rememberSaveable { mutableStateOf(-1) }
 
+            val abrirInicio by abrirInicioState
+
             PillBotNavigation(
                 navController = navController,
-                usuarioIdInicial = usuarioIdDinamico
+                usuarioIdInicial = usuarioIdDinamico,
+                navegarAInicio = abrirInicio,
+                onNavegacionAInicioConsumida = { abrirInicioState.value = false }
             )
+        }
+    }
+
+    // Si la Activity ya estaba abierta (singleTop/singleTask), este método recibe el nuevo intent
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (intent.getBooleanExtra(EXTRA_ABRIR_INICIO, false)) {
+            abrirInicioState.value = true
         }
     }
 }

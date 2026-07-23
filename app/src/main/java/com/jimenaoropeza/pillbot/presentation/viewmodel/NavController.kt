@@ -31,7 +31,9 @@ import com.jimenaoropeza.pillbot.viewmodel.RecordatorioViewModel
 fun PillBotNavigation(
     navController: NavHostController,
     usuarioIdInicial: Int,
-    tomaHoyViewModel: TomaHoyViewModel = viewModel()
+    tomaHoyViewModel: TomaHoyViewModel = viewModel(),
+    navegarAInicio: Boolean = false,
+    onNavegacionAInicioConsumida: () -> Unit = {}
 ) {
     // INSTANCIACIÓN DE VIEWMODELS
     val medicamentoViewModel: MedicamentoViewModel = viewModel()
@@ -50,6 +52,17 @@ fun PillBotNavigation(
     LaunchedEffect(usuarioId) {
         if (usuarioId > 0) {
             tomaHoyViewModel.cargarTomasHoy(usuarioId = usuarioId)
+        }
+    }
+
+    // Navega a Inicio cuando la app se abrió desde una notificación (y hay sesión activa)
+    LaunchedEffect(navegarAInicio, usuarioId) {
+        if (navegarAInicio && usuarioId > 0) {
+            navController.navigate(Screen.Inicio.route) {
+                popUpTo(Screen.Inicio.route) { inclusive = false }
+                launchSingleTop = true
+            }
+            onNavegacionAInicioConsumida()
         }
     }
 

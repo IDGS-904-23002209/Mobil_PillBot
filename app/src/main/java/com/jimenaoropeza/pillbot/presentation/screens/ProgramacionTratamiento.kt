@@ -251,7 +251,7 @@ private fun SeccionRegistrarTratamiento(
                     onClick = {
                         when {
                             detalleSeleccionado == null -> {
-                                Toast.makeText(context, "Selecciona un id_detalle_receta", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Selecciona un tratamiento", Toast.LENGTH_SHORT).show()
                             }
                             compartimentoSeleccionado == null -> {
                                 Toast.makeText(context, "Selecciona un compartimento", Toast.LENGTH_SHORT).show()

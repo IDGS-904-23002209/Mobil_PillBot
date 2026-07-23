@@ -17,7 +17,10 @@ class TomaHoyRepository {
 
             // Log de control para verificar la conexión directa a producción
             Log.d("PILLBOT_API", "Petición realizada para el usuarioId: $usuarioId")
-            Log.d("PILLBOT_API", "Número de registros reales devueltos por la nube: ${resultado.size}")
+            Log.d(
+                "PILLBOT_API",
+                "Número de registros reales devueltos por la nube: ${resultado.size}"
+            )
 
             resultado
         } catch (e: Exception) {
@@ -27,16 +30,16 @@ class TomaHoyRepository {
         }
     }
 
-    suspend fun marcarMedicamentoTomado(idToma: Int): Boolean {
+    suspend fun marcarMedicamentoTomado(
+        idToma: Int,
+        idProgramacion: Int,
+        horaToma: String
+    ): Boolean {
         return try {
-            val ahora = LocalDateTime.now()
-            val fechaFormateada = ahora.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "Z"
-            val horaFormateada = ahora.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
-
             val historialRequest = HistorialRequest(
                 idToma = idToma,
-                fechaReal = fechaFormateada,
-                horaReal = horaFormateada,
+                idProgramacion = idProgramacion,
+                horaToma = horaToma,
                 estatus = "Tomado",
                 pesoDetectado = 0.0,
                 confirmadaPorIr = false
