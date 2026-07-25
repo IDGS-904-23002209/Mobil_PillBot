@@ -47,7 +47,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
 
-            // 🟢 CORREGIDO: Se cambia remember por rememberSaveable para sobrevivir a la destrucción de la Activity
             var usuarioIdDinamico by rememberSaveable { mutableStateOf(-1) }
 
             val abrirInicio by abrirInicioState
