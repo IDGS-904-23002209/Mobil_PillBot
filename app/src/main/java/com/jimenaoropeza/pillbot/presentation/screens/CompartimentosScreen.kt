@@ -331,6 +331,16 @@ fun CompartimentoCard(
                         )
                     }
                 }
+                // ---- NUEVO: cantidad requerida para todo el tratamiento ----
+                if (compartimento.cantidadRequerida != null) {
+                    Text(
+                        text = "Cantidad requerida: ${compartimento.cantidadRequerida}",
+                        fontSize = 13.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
+                
 
                 // ---- Medicamento asignado, solo si está ocupado ----
                 if (!disponible && !compartimento.nombreMedicamento.isNullOrBlank()) {
@@ -339,6 +349,17 @@ fun CompartimentoCard(
                         fontSize = 13.sp,
                         color = Color(0xFF1D2A44),
                         fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+
+// ---- NUEVO: último medicamento, solo si está disponible ----
+                if (disponible && !compartimento.nombreMedicamento.isNullOrBlank()) {
+                    Text(
+                        text = "Último medicamento: ${compartimento.nombreMedicamento}",
+                        fontSize = 13.sp,
+                        color = Color.Gray,
+                        fontWeight = FontWeight.Medium,
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }

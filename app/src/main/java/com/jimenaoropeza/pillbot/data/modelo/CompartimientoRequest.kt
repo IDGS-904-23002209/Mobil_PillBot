@@ -9,7 +9,8 @@ data class CompartimentoRequest(
     @SerializedName("capacidadMaximaPastillas") val capacidadMaximaPastillas: Int,
     @SerializedName("cantidadActualPastillas") val cantidadActualPastillas: Int,
     @SerializedName("estado") val estado: String?,
-    @SerializedName("nombreMedicamento") val nombreMedicamento: String? = null
+    @SerializedName("nombreMedicamento") val nombreMedicamento: String? = null,
+    @SerializedName("cantidadRequerida") val cantidadRequerida: Int? = null
 )
 
 data class ActualizarCantidadRequest(
