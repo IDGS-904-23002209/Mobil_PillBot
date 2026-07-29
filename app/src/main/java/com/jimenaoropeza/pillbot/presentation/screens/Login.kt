@@ -34,6 +34,14 @@ import com.jimenaoropeza.pillbot.viewmodel.AuthViewModel
 import com.jimenaoropeza.pillbot.ui.theme.BlueSky
 import com.jimenaoropeza.pillbot.ui.theme.GrayLight
 
+import android.app.DatePickerDialog
+import android.util.Patterns
+import androidx.compose.material.icons.filled.AddIcCall
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.ui.platform.LocalContext
+import java.text.SimpleDateFormat
+import java.util.*
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Login(
@@ -243,21 +251,21 @@ fun Login(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Registrarse(
-    viewModel: AuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel(), // <-- Agregamos el ViewModel aquí
+    viewModel: AuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     onBackToLoginClick: () -> Unit,
     onRegisterSuccessClick: () -> Unit
 ) {
-    var nombre by remember { mutableStateOf("") }
-    var correo by remember { mutableStateOf("") }
-    var contrasenia by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+    // Estado local para visibilidad de contraseña y errores de validación previa
     var passwordVisible by remember { mutableStateOf(false) }
+    var errorValidacion by remember { mutableStateOf<String?>(null) }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // Imagen de fondo con opacidad de Pillbot
         Image(
             painter = painterResource(id = R.drawable.imagenfondo),
             contentDescription = null,
@@ -270,20 +278,21 @@ fun Registrarse(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .padding(24.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Logotipo y Cabecera de Pillbot
+            // Cabecera Pillbot
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(bottom = 24.dp)
+                modifier = Modifier.padding(bottom = 16.dp)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.logopastillero),
                     contentDescription = "Logotipo de Pillbot",
-                    modifier = Modifier.size(80.dp)
+                    modifier = Modifier.size(70.dp)
                 )
 
                 Spacer(modifier = Modifier.width(12.dp))
@@ -291,15 +300,14 @@ fun Registrarse(
                 Column {
                     Text(
                         text = "PILLBOT",
-                        fontSize = 45.sp,
+                        fontSize = 38.sp,
                         fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.displayLarge,
                         color = Color.Black
                     )
                     Text(
                         text = "Tu dispensador de pastillas\ninteligente",
-                        fontSize = 13.sp,
-                        lineHeight = 16.sp,
+                        fontSize = 12.sp,
+                        lineHeight = 15.sp,
                         color = Color.Black,
                         fontWeight = FontWeight.Medium,
                         textAlign = TextAlign.Center
@@ -307,7 +315,6 @@ fun Registrarse(
                 }
             }
 
-            // Título de la pantalla
             Text(
                 text = "¡Crea tu cuenta!",
                 fontSize = 22.sp,
@@ -316,73 +323,100 @@ fun Registrarse(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo 1: Nombre Completo
+            // 1. Nombre
+            CampoTexto(
+                label = "Nombre",
+                value = viewModel.nombre,
+                onValueChange = { viewModel.nombre = it },
+                placeholder = "Juan",
+                icon = Icons.Default.Person
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 2. Apellido Paterno
+            CampoTexto(
+                label = "Apellido Paterno",
+                value = viewModel.apellidoPaterno,
+                onValueChange = { viewModel.apellidoPaterno = it },
+                placeholder = "García",
+                icon = Icons.Default.Person
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 3. Apellido Materno
+            CampoTexto(
+                label = "Apellido Materno",
+                value = viewModel.apellidoMaterno,
+                onValueChange = { viewModel.apellidoMaterno = it },
+                placeholder = "Pérez",
+                icon = Icons.Default.Person
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 4. Teléfono (Campo exigido por el Swagger)
+            CampoTexto(
+                label = "Teléfono",
+                value = viewModel.telefono,
+                onValueChange = { viewModel.telefono = it },
+                placeholder = "4771234567",
+                icon = Icons.Default.AddIcCall,
+                keyboardType = KeyboardType.Phone
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 5. Correo Electrónico
+            CampoTexto(
+                label = "Correo Electrónico",
+                value = viewModel.correo,
+                onValueChange = { viewModel.correo = it },
+                placeholder = "ejemplo@gmail.com",
+                icon = Icons.Default.Email,
+                keyboardType = KeyboardType.Email
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 6. Selección de Rol (3 = Cliente, 4 = Cuidador)
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "Nombre completo",
+                    text = "Tipo de Cuenta",
                     style = MaterialTheme.typography.labelMedium,
                     color = Color.Black,
                     modifier = Modifier.padding(bottom = 4.dp, start = 4.dp)
                 )
-                OutlinedTextField(
-                    value = nombre,
-                    onValueChange = { nombre = it },
-                    placeholder = { Text("Juan Pérez", color = GrayLight) },
-                    leadingIcon = {
-                        Icon(
-                            Icons.Default.Person,
-                            contentDescription = null,
-                            tint = GrayLight
-                        )
-                    },
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        focusedBorderColor = Color(0xFF59CBA2),
-                        unfocusedBorderColor = Color(0xFF59CBA2)
-                    )
-                )
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(
+                            selected = viewModel.idRol == 3,
+                            onClick = { viewModel.idRol = 3 },
+                            colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF59CBA2))
+                        )
+                        Text("Cliente", fontSize = 14.sp)
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(
+                            selected = viewModel.idRol == 4,
+                            onClick = { viewModel.idRol = 4 },
+                            colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF59CBA2))
+                        )
+                        Text("Cuidador", fontSize = 14.sp)
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Campo 2: Nombre de usuario o correo
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "Nombre de usuario o correo",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = Color.Black,
-                    modifier = Modifier.padding(bottom = 4.dp, start = 4.dp)
-                )
-                OutlinedTextField(
-                    value = correo,
-                    onValueChange = { correo = it },
-                    placeholder = { Text("Ejemplo@gmail.com", color = GrayLight) },
-                    leadingIcon = {
-                        Icon(
-                            Icons.Default.Email,
-                            contentDescription = null,
-                            tint = GrayLight
-                        )
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        focusedBorderColor = Color(0xFF59CBA2),
-                        unfocusedBorderColor = Color(0xFF59CBA2)
-                    )
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Campo 3: Contraseña
+            // 7. Contraseña
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "Contraseña",
@@ -391,16 +425,10 @@ fun Registrarse(
                     modifier = Modifier.padding(bottom = 4.dp, start = 4.dp)
                 )
                 OutlinedTextField(
-                    value = contrasenia,
-                    onValueChange = { contrasenia = it },
+                    value = viewModel.contrasena,
+                    onValueChange = { viewModel.contrasena = it },
                     placeholder = { Text("********", color = GrayLight) },
-                    leadingIcon = {
-                        Icon(
-                            Icons.Default.Lock,
-                            contentDescription = null,
-                            tint = GrayLight
-                        )
-                    },
+                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = GrayLight) },
                     trailingIcon = {
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
@@ -424,22 +452,50 @@ fun Registrarse(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Botón REGISTRARSE
+            // --- MOSTRAR ERRORES ---
+            errorValidacion?.let { error ->
+                Text(
+                    text = error,
+                    color = Color.Red,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+
+            viewModel.errorMessage?.let { error ->
+                Text(
+                    text = error,
+                    color = Color.Red,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+
             if (viewModel.isLoading) {
                 CircularProgressIndicator(color = Color(0xFF59CBA2), modifier = Modifier.padding(16.dp))
             }
 
-            viewModel.errorMessage?.let { error ->
-                Text(text = error, color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(bottom = 8.dp))
-            }
-
+            // --- BOTÓN REGISTRARSE ---
             Button(
                 onClick = {
-                    if (nombre.isNotEmpty() && correo.isNotEmpty() && contrasenia.isNotEmpty()) {
-                        viewModel.registrarUsuario(nombre, correo, contrasenia) {
-                            onRegisterSuccessClick() // Redirige al login o pantalla de éxito al registrarse
+                    errorValidacion = null
+
+                    when {
+                        viewModel.nombre.trim().isEmpty() -> errorValidacion = "Por favor ingresa tu nombre."
+                        viewModel.apellidoPaterno.trim().isEmpty() -> errorValidacion = "Por favor ingresa tu apellido paterno."
+                        viewModel.apellidoMaterno.trim().isEmpty() -> errorValidacion = "Por favor ingresa tu apellido materno."
+                        viewModel.correo.trim().isEmpty() -> errorValidacion = "Por favor ingresa tu correo."
+                        !Patterns.EMAIL_ADDRESS.matcher(viewModel.correo.trim()).matches() -> errorValidacion = "El correo no tiene un formato válido."
+                        viewModel.contrasena.trim().isEmpty() -> errorValidacion = "Por favor ingresa una contraseña."
+                        viewModel.contrasena.length < 6 -> errorValidacion = "La contraseña debe tener al menos 6 caracteres."
+                        else -> {
+                            viewModel.registrarUsuario {
+                                onRegisterSuccessClick()
+                            }
                         }
                     }
                 },
@@ -447,9 +503,7 @@ fun Registrarse(
                     .fillMaxWidth()
                     .height(48.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF59CBA2)
-                )
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF59CBA2))
             ) {
                 Text(
                     text = "REGISTRARSE",
@@ -459,9 +513,9 @@ fun Registrarse(
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Enlace para volver si ya tiene cuenta
+            // Volver al Login
             Row(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
@@ -474,13 +528,48 @@ fun Registrarse(
                 ) {
                     Text(
                         text = "Inicia sesión",
-                        color = Color(0xFF00A2E8), // Color azul de tus enlaces
+                        color = Color(0xFF00A2E8),
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
                     )
                 }
             }
         }
+    }
+}
+
+// Sub-componente auxiliar reutilizable para mantener limpia la UI
+@Composable
+fun CampoTexto(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    keyboardType: KeyboardType = KeyboardType.Text
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = Color.Black,
+            modifier = Modifier.padding(bottom = 4.dp, start = 4.dp)
+        )
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = { Text(placeholder, color = GrayLight) },
+            leadingIcon = { Icon(icon, contentDescription = null, tint = GrayLight) },
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(14.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                focusedBorderColor = Color(0xFF59CBA2),
+                unfocusedBorderColor = Color(0xFF59CBA2)
+            )
+        )
     }
 }
 
