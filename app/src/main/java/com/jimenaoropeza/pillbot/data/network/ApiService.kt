@@ -18,6 +18,7 @@ import com.jimenaoropeza.pillbot.modelo.InventarioMedicamentoRequest
 import com.jimenaoropeza.pillbot.modelo.TipoPresentacion
 import com.jimenaoropeza.pillbot.modelo.UnidadMedida
 import com.jimenaoropeza.pillbot.data.modelo.Tratamiento
+import com.jimenaoropeza.pillbot.data.modelo.UsuarioResponse
 import com.jimenaoropeza.pillbot.modelo.ProgramacionTratamientoRequest
 import com.jimenaoropeza.pillbot.modelo.HistorialMedicamento
 
@@ -144,4 +145,9 @@ interface ApiService {
         @Path("idCompartimento") idCompartimento: Int,
         @Body request: com.jimenaoropeza.pillbot.data.modelo.ActualizarCantidadRequest
     ): Response<Unit>
+
+    @GET("api/admin/usuarios/usuarioBuscar/{id}")
+    suspend fun buscarUsuarioPorId(
+        @Path("id") id: Int
+    ): Response<UsuarioResponse>
 }

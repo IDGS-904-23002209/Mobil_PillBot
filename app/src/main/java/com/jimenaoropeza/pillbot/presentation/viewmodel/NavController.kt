@@ -36,6 +36,8 @@ fun PillBotNavigation(
     navegarAInicio: Boolean = false,
     onNavegacionAInicioConsumida: () -> Unit = {}
 ) {
+
+    val perfilViewModel: PerfilViewModel = viewModel()
     // INSTANCIACIÓN DE VIEWMODELS
     val medicamentoViewModel: MedicamentoViewModel = viewModel()
     val recordatorioViewModel: RecordatorioViewModel = viewModel()
@@ -373,7 +375,8 @@ fun PillBotNavigation(
                             navController.navigate(Screen.Login.route) {
                                 popUpTo(0) { inclusive = true }
                             }
-                        }
+                        },
+                        viewModel = perfilViewModel // <--- AGREGAR ESTA LÍNEA
                     )
                 }
 
