@@ -15,16 +15,16 @@ class AuthViewModel : ViewModel() {
 
     private val repository = AuthRepository()
 
-    // --- ESTADOS DEL FORMULARIO DE REGISTRO Y SESIÓN ---
     var nombre by mutableStateOf("")
     var apellidoPaterno by mutableStateOf("")
     var apellidoMaterno by mutableStateOf("")
+    var fechaNacimiento by mutableStateOf("")
     var correo by mutableStateOf("")
     var contrasena by mutableStateOf("")
     var telefono by mutableStateOf("")
-    var idRol by mutableStateOf(1) // Cambia al ID de rol predeterminado de tu BD
+    var direccion by mutableStateOf("")
+    var idRol by mutableStateOf(3)
 
-    // --- ESTADOS DE SESIÓN Y UI ---
     var usuarioNombre by mutableStateOf("Usuario")
         private set
 
@@ -37,9 +37,6 @@ class AuthViewModel : ViewModel() {
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
-    /**
-     * Inicia sesión validando credenciales contra el servidor backend
-     */
     fun iniciarSesion(
         correo: String,
         contrasena: String,
@@ -57,11 +54,9 @@ class AuthViewModel : ViewModel() {
                     if (loginResponse != null && loginResponse.success && loginResponse.data != null) {
                         usuarioNombre = loginResponse.data.nombre.ifBlank { "Usuario" }
                         usuarioId = loginResponse.data.idUsuario
-
                         onSuccess(usuarioNombre)
                     } else {
-                        errorMessage =
-                            loginResponse?.message ?: "Credenciales incorrectas o usuario inactivo"
+                        errorMessage = loginResponse?.message ?: "Credenciales incorrectas o usuario inactivo"
                     }
                 } else {
                     errorMessage = "Error en el servidor: ${response.code()}"
@@ -79,11 +74,9 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Registra un nuevo usuario
-     */
+    // Registra un nuevo usuario con la estructura completa requerida por el backend
     fun registrarUsuario(onSuccess: () -> Unit) {
-        if (nombre.isBlank() || correo.isBlank() || contrasena.isBlank()) {
+        if (nombre.isBlank() || correo.isBlank() || contrasena.isBlank() || direccion.isBlank() || fechaNacimiento.isBlank()) {
             errorMessage = "Por favor, completa los campos requeridos."
             return
         }
@@ -93,13 +86,18 @@ class AuthViewModel : ViewModel() {
 
         viewModelScope.launch {
             try {
+                // Formateamos la fecha a ISO (AAAA-MM-DDTHH:mm:ss.sssZ) para .NET
+                val fechaFormatted = if (fechaNacimiento.contains("T")) fechaNacimiento else "${fechaNacimiento}T00:00:00.000Z"
+
                 val request = RegisterRequest(
                     nombre = nombre.trim(),
                     apellidoPaterno = apellidoPaterno.trim(),
-                    apellidoMaterno = apellidoMaterno.trim(),
+                    apellidoMaterno = apellidoMaterno.trim().ifBlank { null },
+                    fechaNacimiento = fechaFormatted,
                     correo = correo.trim(),
-                    contrasena = contrasena,
-                    telefono = if (telefono.isBlank()) "0000000000" else telefono.trim(),
+                    contrasena = contrasena.trim(),
+                    telefono = telefono.trim().ifBlank { null },
+                    direccion = direccion.trim(),
                     idRol = idRol
                 )
 
@@ -109,13 +107,10 @@ class AuthViewModel : ViewModel() {
                     onSuccess()
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    android.util.Log.e(
-                        "API_ERROR",
-                        "Código: ${response.code()} | Detalle: $errorBody"
-                    )
+                    android.util.Log.e("API_ERROR", "Código: ${response.code()} | Detalle: $errorBody")
 
                     errorMessage = when (response.code()) {
-                        400 -> "Datos de registro inválidos. Revisa la información."
+                        400 -> "Datos de registro inválidos. Revisa la información enviada."
                         409 -> "El correo electrónico ya está registrado."
                         else -> "Error en el servidor (${response.code()})"
                     }

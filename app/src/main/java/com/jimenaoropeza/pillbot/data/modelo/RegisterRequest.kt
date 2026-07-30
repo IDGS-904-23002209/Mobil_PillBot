@@ -10,7 +10,10 @@ data class RegisterRequest(
     val apellidoPaterno: String,
 
     @SerializedName("apellidoMaterno")
-    val apellidoMaterno: String,
+    val apellidoMaterno: String? = null,
+
+    @SerializedName("fechaNacimiento")
+    val fechaNacimiento: String, // Formato "YYYY-MM-DD" o ISO
 
     @SerializedName("correo")
     val correo: String,
@@ -19,8 +22,11 @@ data class RegisterRequest(
     val contrasena: String,
 
     @SerializedName("telefono")
-    val telefono: String,
+    val telefono: String? = null,
+
+    @SerializedName("direccion")
+    val direccion: String,
 
     @SerializedName("idRol")
-    val idRol: Int
+    val idRol: Int = 3
 )

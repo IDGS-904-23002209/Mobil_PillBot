@@ -38,6 +38,8 @@ import android.app.DatePickerDialog
 import android.util.Patterns
 import androidx.compose.material.icons.filled.AddIcCall
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.ui.platform.LocalContext
 import java.text.SimpleDateFormat
 import java.util.*
@@ -257,7 +259,6 @@ fun Registrarse(
 ) {
     val context = LocalContext.current
 
-    // Estado local para visibilidad de contraseña y errores de validación previa
     var passwordVisible by remember { mutableStateOf(false) }
     var errorValidacion by remember { mutableStateOf<String?>(null) }
 
@@ -327,7 +328,7 @@ fun Registrarse(
 
             // 1. Nombre
             CampoTexto(
-                label = "Nombre",
+                label = "Nombre *",
                 value = viewModel.nombre,
                 onValueChange = { viewModel.nombre = it },
                 placeholder = "Juan",
@@ -338,7 +339,7 @@ fun Registrarse(
 
             // 2. Apellido Paterno
             CampoTexto(
-                label = "Apellido Paterno",
+                label = "Apellido Paterno *",
                 value = viewModel.apellidoPaterno,
                 onValueChange = { viewModel.apellidoPaterno = it },
                 placeholder = "García",
@@ -358,7 +359,29 @@ fun Registrarse(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 4. Teléfono (Campo exigido por el Swagger)
+            // 4. Fecha de Nacimiento
+            CampoTexto(
+                label = "Fecha de Nacimiento * (AAAA-MM-DD)",
+                value = viewModel.fechaNacimiento,
+                onValueChange = { viewModel.fechaNacimiento = it },
+                placeholder = "2004-10-28",
+                icon = Icons.Default.DateRange
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 5. Dirección
+            CampoTexto(
+                label = "Dirección Completa *",
+                value = viewModel.direccion,
+                onValueChange = { viewModel.direccion = it },
+                placeholder = "Av. Siempre Viva 123, León, Gto.",
+                icon = Icons.Default.Home
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 6. Teléfono
             CampoTexto(
                 label = "Teléfono",
                 value = viewModel.telefono,
@@ -370,9 +393,9 @@ fun Registrarse(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 5. Correo Electrónico
+            // 7. Correo Electrónico
             CampoTexto(
-                label = "Correo Electrónico",
+                label = "Correo Electrónico *",
                 value = viewModel.correo,
                 onValueChange = { viewModel.correo = it },
                 placeholder = "ejemplo@gmail.com",
@@ -382,7 +405,7 @@ fun Registrarse(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 6. Selección de Rol (3 = Cliente, 4 = Cuidador)
+            // 8. Tipo de Cuenta
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "Tipo de Cuenta",
@@ -416,10 +439,10 @@ fun Registrarse(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 7. Contraseña
+            // 9. Contraseña
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "Contraseña",
+                    text = "Contraseña *",
                     style = MaterialTheme.typography.labelMedium,
                     color = Color.Black,
                     modifier = Modifier.padding(bottom = 4.dp, start = 4.dp)
@@ -454,7 +477,7 @@ fun Registrarse(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // --- MOSTRAR ERRORES ---
+            // --- ERRORES ---
             errorValidacion?.let { error ->
                 Text(
                     text = error,
@@ -487,9 +510,10 @@ fun Registrarse(
                     when {
                         viewModel.nombre.trim().isEmpty() -> errorValidacion = "Por favor ingresa tu nombre."
                         viewModel.apellidoPaterno.trim().isEmpty() -> errorValidacion = "Por favor ingresa tu apellido paterno."
-                        viewModel.apellidoMaterno.trim().isEmpty() -> errorValidacion = "Por favor ingresa tu apellido materno."
+                        viewModel.fechaNacimiento.trim().isEmpty() -> errorValidacion = "Por favor ingresa tu fecha de nacimiento."
+                        viewModel.direccion.trim().isEmpty() -> errorValidacion = "Por favor ingresa tu dirección."
                         viewModel.correo.trim().isEmpty() -> errorValidacion = "Por favor ingresa tu correo."
-                        !Patterns.EMAIL_ADDRESS.matcher(viewModel.correo.trim()).matches() -> errorValidacion = "El correo no tiene un formato válido."
+                        !android.util.Patterns.EMAIL_ADDRESS.matcher(viewModel.correo.trim()).matches() -> errorValidacion = "El correo no tiene un formato válido."
                         viewModel.contrasena.trim().isEmpty() -> errorValidacion = "Por favor ingresa una contraseña."
                         viewModel.contrasena.length < 6 -> errorValidacion = "La contraseña debe tener al menos 6 caracteres."
                         else -> {
