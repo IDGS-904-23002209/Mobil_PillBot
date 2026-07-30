@@ -7,6 +7,7 @@ import com.jimenaoropeza.pillbot.modelo.InventarioMedicamentoRequest
 import com.jimenaoropeza.pillbot.modelo.TipoPresentacion
 import com.jimenaoropeza.pillbot.network.RetrofitInstance
 import com.jimenaoropeza.pillbot.network.RespuestaServidor // O la clase que maneje el objeto {"mensaje": "..."}
+import com.jimenaoropeza.pillbot.modelo.HistorialMedicamento
 import retrofit2.Response
 
 class MedicamentoRepository {
@@ -17,6 +18,12 @@ class MedicamentoRepository {
         usuarioId: Int
     ): List<Medicamento> {
         return api.obtenerMedicamentos(usuarioId)
+    }
+
+    suspend fun obtenerHistorialMedicamentos(
+        usuarioId: Int
+    ): List<HistorialMedicamento> {
+        return api.obtenerHistorialMedicamentos(usuarioId)
     }
 
     suspend fun registrarMedicamento(
@@ -45,4 +52,6 @@ class MedicamentoRepository {
 
     suspend fun obtenerUnidadesMedida() =
         api.obtenerUnidadesMedida()
+
+
 }

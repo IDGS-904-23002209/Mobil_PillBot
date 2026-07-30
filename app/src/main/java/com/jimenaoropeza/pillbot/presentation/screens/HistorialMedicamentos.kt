@@ -20,7 +20,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jimenaoropeza.pillbot.R
-import com.jimenaoropeza.pillbot.modelo.Medicamento
 import com.jimenaoropeza.pillbot.modelo.MedicamentoRequest
 import com.jimenaoropeza.pillbot.modelo.RecordatorioRequest
 import com.jimenaoropeza.pillbot.viewmodel.MedicamentoViewModel
@@ -28,14 +27,21 @@ import com.jimenaoropeza.pillbot.viewmodel.RecordatorioViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import com.jimenaoropeza.pillbot.modelo.HistorialMedicamento
 
 @Composable
 fun InventarioMedicamentosScreen(
-    medicamentos: List<Medicamento>,
-    onMedicamentoClick: (Medicamento) -> Unit,
+    medicamentos: List<HistorialMedicamento>,
+    onMedicamentoClick: (HistorialMedicamento) -> Unit,
     onVerCompartimentos: () -> Unit
 ) {
     var query by remember { mutableStateOf("") }
+
+    val medicamentosFiltrados = medicamentos.filter { medicamento ->
+        medicamento.nombreMedicamento.contains(query, ignoreCase = true) ||
+                medicamento.principioActivo.contains(query, ignoreCase = true) ||
+                medicamento.padecimiento.contains(query, ignoreCase = true)
+    }
 
     Column(
         modifier = Modifier
@@ -55,7 +61,7 @@ fun InventarioMedicamentosScreen(
         )
 
         Text(
-            text = "Administra los medicamentos almacenados en tu dispensador",
+            text = "Consulta los medicamentos registrados en tus tratamientos",
             color = Color.Gray,
             textAlign = TextAlign.Center,
             fontSize = 14.sp
@@ -83,7 +89,10 @@ fun InventarioMedicamentosScreen(
         OutlinedTextField(
             value = query,
             onValueChange = { query = it },
-            placeholder = { Text("Buscar medicamento...") },
+            placeholder = {
+                Text("Buscar medicamento o padecimiento...")
+            },
+            singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
@@ -94,19 +103,113 @@ fun InventarioMedicamentosScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // ¡CORREGIDO!: Mapeo de campos adaptado al formato exacto de las llaves del JSON de la API
-        medicamentos.filter { it.nombreMedicamento.contains(query, ignoreCase = true) }.forEach { medicamento ->
-            MedicamentoCard(
-                nombre = "${medicamento.nombreMedicamento} (${medicamento.principioActivo})",
-                cantidad = "${medicamento.inventarioActual} unidades",
-                proximaToma = "Compartimento ${medicamento.numeroCompartimento} (${medicamento.estadoCompartimento})",
-                stock = if (medicamento.inventarioActual > 5) "Stock suficiente" else "Stock bajo",
-                stockColor = if (medicamento.inventarioActual > 5) Color(0xFF59CBA2) else Color(0xFFFF9800),
-                onClick = { onMedicamentoClick(medicamento) }
+        if (medicamentosFiltrados.isEmpty()) {
+            Text(
+                text = if (query.isBlank()) {
+                    "No hay medicamentos en el historial"
+                } else {
+                    "No se encontraron resultados"
+                },
+                color = Color.Gray,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 24.dp)
             )
-            Spacer(modifier = Modifier.height(10.dp))
+        } else {
+            medicamentosFiltrados.forEach { medicamento ->
+                HistorialMedicamentoCard(
+                    nombre = medicamento.nombreMedicamento,
+                    principioActivo = medicamento.principioActivo,
+                    padecimiento = medicamento.padecimiento,
+                    fechaInicio = formatearFechaHistorial(
+                        medicamento.fechaInicio
+                    ),
+                    onClick = {
+                        onMedicamentoClick(medicamento)
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+            }
         }
+
         Spacer(modifier = Modifier.height(80.dp))
+    }
+}
+
+@Composable
+fun HistorialMedicamentoCard(
+    nombre: String,
+    principioActivo: String,
+    padecimiento: String,
+    fechaInicio: String,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFF7FDFB)
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(
+                    id = R.drawable.ic_pildora
+                ),
+                contentDescription = "Medicamento",
+                modifier = Modifier.size(55.dp)
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = nombre,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1D2A44),
+                    fontSize = 16.sp
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "Principio activo: $principioActivo",
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
+
+                Text(
+                    text = "Padecimiento: $padecimiento",
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
+
+                Text(
+                    text = "Fecha de inicio: $fechaInicio",
+                    fontSize = 12.sp,
+                    color = Color(0xFF2298D4),
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowRight,
+                contentDescription = "Ver detalle",
+                tint = Color.Gray
+            )
+        }
     }
 }
 
@@ -547,5 +650,22 @@ fun calcularDiasTratamiento(fechaInicio: String, fechaFin: String): Int {
     } catch (e: Exception) {
         e.printStackTrace()
         1
+    }
+}
+
+fun formatearFechaHistorial(fecha: String): String {
+    return try {
+        val fechaLimpia = fecha.substringBefore("T")
+
+        val fechaConvertida = LocalDate.parse(
+            fechaLimpia,
+            DateTimeFormatter.ISO_LOCAL_DATE
+        )
+
+        fechaConvertida.format(
+            DateTimeFormatter.ofPattern("dd/MM/yyyy")
+        )
+    } catch (e: Exception) {
+        fecha
     }
 }

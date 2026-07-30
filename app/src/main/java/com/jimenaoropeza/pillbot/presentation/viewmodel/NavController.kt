@@ -23,6 +23,7 @@ import com.jimenaoropeza.pillbot.R
 import com.jimenaoropeza.pillbot.pantallas.*
 import com.jimenaoropeza.pillbot.presentation.screens.Notificaciones
 import com.jimenaoropeza.pillbot.presentation.screens.RegistrarTratamiento
+import com.jimenaoropeza.pillbot.presentation.screens.DetalleHistorialMedicamento
 import com.jimenaoropeza.pillbot.viewmodel.MedicamentoViewModel
 import com.jimenaoropeza.pillbot.viewmodel.RecordatorioViewModel
 
@@ -40,7 +41,7 @@ fun PillBotNavigation(
     val recordatorioViewModel: RecordatorioViewModel = viewModel()
     val compartimentoViewModel: CompartimentoViewModel = viewModel()
 
-    // 🟢 CORREGIDO: Ambas variables ahora usan rememberSaveable para asegurar el ID de sesión
+    // Ambas variables ahora usan rememberSaveable para asegurar el ID de sesión
     var usuarioId by rememberSaveable { mutableStateOf(usuarioIdInicial) }
     var nombreUsuario by rememberSaveable { mutableStateOf("Usuario") }
 
@@ -238,26 +239,43 @@ fun PillBotNavigation(
 
                 // HISTORIAL DE MEDICAMENTOS
                 composable(route = "historialMedicamento") {
-                    val listaMedicamentos by medicamentoViewModel.medicamentos
+                    val listaHistorial by medicamentoViewModel.historialMedicamentos
 
-                    // 🛡️ CORREGIDO: Lanzar solo si el ID de usuario es válido
                     LaunchedEffect(usuarioId) {
                         if (usuarioId > 0) {
-                            medicamentoViewModel.cargarMedicamentos(usuarioId)
+                            medicamentoViewModel.cargarHistorialMedicamentos(usuarioId)
                         }
                     }
 
                     InventarioMedicamentosScreen(
-                        medicamentos = listaMedicamentos,
+                        medicamentos = listaHistorial,
                         onMedicamentoClick = { medicamento ->
-                            medicamentoViewModel.medicamentoSeleccionado = medicamento
-                            navController.navigate("detalleMedicamento")
+                            medicamentoViewModel.historialSeleccionado = medicamento
+                            navController.navigate("detalleHistorialMedicamento")
                         },
-                        onVerCompartimentos = { navController.navigate("compartimentos") }
+                        onVerCompartimentos = {
+                            navController.navigate("compartimentos")
+                        }
                     )
                 }
+                composable(route = "detalleHistorialMedicamento") {
 
-                // PANTALLA DE COMPARTIMENTOS
+                    val historial = medicamentoViewModel.historialSeleccionado
+
+                    if (historial != null) {
+                        DetalleHistorialMedicamento(
+                            medicamento = historial,
+                            onVolver = {
+                                navController.popBackStack()
+                            }
+                        )
+                    } else {
+                        navController.popBackStack()
+                    }
+                }
+
+
+
                 // PANTALLA DE COMPARTIMENTOS
                 composable(route = "compartimentos") {
                     val listaCompartimentos by compartimentoViewModel.compartimentos

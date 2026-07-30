@@ -13,12 +13,19 @@ import androidx.compose.runtime.setValue
 import android.util.Log
 import com.jimenaoropeza.pillbot.modelo.CatalogoMedicamentoRequest
 import com.jimenaoropeza.pillbot.network.ApiService
+import com.jimenaoropeza.pillbot.modelo.HistorialMedicamento
 
 class MedicamentoViewModel : ViewModel() {
 
     private val repository = MedicamentoRepository()
 
     var medicamentos = mutableStateOf<List<Medicamento>>(emptyList())
+
+    var historialMedicamentos =
+        mutableStateOf<List<HistorialMedicamento>>(emptyList())
+
+    var historialSeleccionado by
+    mutableStateOf<HistorialMedicamento?>(null)
 
     // Dentro de MedicamentoViewModel.kt
     var medicamentoSeleccionado by mutableStateOf<Medicamento?>(null)
@@ -50,7 +57,7 @@ class MedicamentoViewModel : ViewModel() {
 
 
     fun cargarMedicamentos(usuarioId: Int) {
-        // 🛡️ CANDADO: Si el id es -1 o menor, no dispares la petición a la API
+        //  CANDADO: Si el id es -1 o menor, no dispares la petición a la API
         if (usuarioId <= 0) {
             Log.w("MEDICAMENTOS_API", "Intento de cargar medicamentos abortado: ID de usuario inválido ($usuarioId)")
             return
@@ -113,4 +120,39 @@ class MedicamentoViewModel : ViewModel() {
         }
     }
 
+
+    fun cargarHistorialMedicamentos(usuarioId: Int) {
+        if (usuarioId <= 0) {
+            Log.w(
+                "HISTORIAL_API",
+                "Intento de cargar historial abortado: ID inválido ($usuarioId)"
+            )
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val lista = repository.obtenerHistorialMedicamentos(usuarioId)
+
+                Log.d(
+                    "HISTORIAL_API",
+                    "Historial cargado para usuarioId: $usuarioId"
+                )
+
+                Log.d(
+                    "HISTORIAL_API",
+                    "Registros encontrados: ${lista.size}"
+                )
+
+                historialMedicamentos.value = lista
+            } catch (e: Exception) {
+                Log.e(
+                    "HISTORIAL_API",
+                    "Error al cargar historial: ${e.message}"
+                )
+                e.printStackTrace()
+                historialMedicamentos.value = emptyList()
+            }
+        }
+    }
 }

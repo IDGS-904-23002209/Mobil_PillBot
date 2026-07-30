@@ -19,6 +19,7 @@ import com.jimenaoropeza.pillbot.modelo.TipoPresentacion
 import com.jimenaoropeza.pillbot.modelo.UnidadMedida
 import com.jimenaoropeza.pillbot.data.modelo.Tratamiento
 import com.jimenaoropeza.pillbot.modelo.ProgramacionTratamientoRequest
+import com.jimenaoropeza.pillbot.modelo.HistorialMedicamento
 
 import retrofit2.Response
 import retrofit2.http.Body
@@ -49,6 +50,11 @@ interface ApiService {
     suspend fun obtenerMedicamentos(
         @Path("usuario_id") usuarioId: Int
     ): List<Medicamento>
+
+    @GET("api/medicamentos/historial/{usuario_id}")
+    suspend fun obtenerHistorialMedicamentos(
+        @Path("usuario_id") usuarioId: Int
+    ): List<HistorialMedicamento>
 
     @POST("api/admin/inventario-medicamentos")
     suspend fun registrarInventarioMedicamento(
