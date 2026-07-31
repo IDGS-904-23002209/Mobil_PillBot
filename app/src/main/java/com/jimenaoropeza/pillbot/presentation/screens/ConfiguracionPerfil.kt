@@ -1,19 +1,27 @@
 package com.jimenaoropeza.pillbot.pantallas
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -21,14 +29,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Importaciones de tu proyecto (ajusta los paquetes según donde guardaste los archivos anteriores)
 import com.jimenaoropeza.pillbot.R
-import com.jimenaoropeza.pillbot.presentation.viewmodel.PerfilState
 import com.jimenaoropeza.pillbot.presentation.viewmodel.PerfilViewModel
-
+import com.jimenaoropeza.pillbot.presentation.viewmodel.PerfilState
 
 val AzulPillbot = Color(0xFF2298D4)
 val VerdePillbot = Color(0xFF59CBA2)
+val RojoCerrarSesion = Color(0xFFE57373)
 
 @Composable
 fun ConfiguracionPerfil(
@@ -36,58 +43,53 @@ fun ConfiguracionPerfil(
     onCerrarSesion: () -> Unit,
     viewModel: PerfilViewModel
 ) {
-    // Escuchar el estado actual desde la API (Loading, Success o Error)
+    val context = LocalContext.current
     val perfilState by viewModel.state.collectAsState()
 
-    // Estados locales para los campos
+    var esEditable by remember { mutableStateOf(false) }
+
+    // Estados independientes para nombres y apellidos
     var nombre by remember { mutableStateOf("") }
+    var apellidoPaterno by remember { mutableStateOf("") }
+    var apellidoMaterno by remember { mutableStateOf("") }
+
     var correo by remember { mutableStateOf("") }
     var telefono by remember { mutableStateOf("") }
+    var fechaNacimiento by remember { mutableStateOf("") }
+    var direccion by remember { mutableStateOf("") }
 
-    var contacto1 by remember { mutableStateOf("Juan Perez Cortes") }
-    var telefono1 by remember { mutableStateOf("477-890-1234") }
-
-    var contacto2 by remember { mutableStateOf("Maria Garcia Padilla") }
-    var telefono2 by remember { mutableStateOf("477-567-8901") }
-
-    var passwordActual by remember { mutableStateOf("") }
     var passwordNueva by remember { mutableStateOf("") }
 
-    // 1. Disparar la consulta al backend en cuanto se cargue la pantalla o cambie usuarioId
     LaunchedEffect(usuarioId) {
         viewModel.obtenerPerfil(usuarioId)
     }
 
-    // 2. Al recibir los datos del backend, rellenar los estados locales
     LaunchedEffect(perfilState) {
         if (perfilState is PerfilState.Success) {
             val persona = (perfilState as PerfilState.Success).usuario.persona
             if (persona != null) {
-                val nombreCompleto = "${persona.nombre} ${persona.apellidoPaterno} ${persona.apellidoMaterno ?: ""}".trim()
-                nombre = nombreCompleto
-                correo = persona.correo
+                nombre = persona.nombre ?: ""
+                apellidoPaterno = persona.apellidoPaterno ?: ""
+                apellidoMaterno = persona.apellidoMaterno ?: ""
+
+                correo = persona.correo ?: ""
                 telefono = persona.telefono ?: ""
+                direccion = persona.direccion ?: ""
+                fechaNacimiento = persona.fechaNacimiento?.split("T")?.get(0) ?: ""
             }
         }
     }
 
-    // Pantalla principal de UI
     Box(modifier = Modifier.fillMaxSize()) {
         when (val state = perfilState) {
             is PerfilState.Loading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = VerdePillbot)
                 }
             }
 
             is PerfilState.Error -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = state.mensaje, color = Color.Red)
                         Spacer(modifier = Modifier.height(8.dp))
@@ -120,19 +122,14 @@ fun ConfiguracionPerfil(
                         color = Color(0xFF1D2A44)
                     )
 
-                    Text(
-                        text = "Administra tu información",
-                        color = Color.Gray
-                    )
+                    Text(text = "Administra tu información", color = Color.Gray)
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Tarjeta de foto de perfil superior
+                    // Tarjeta de Avatar
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFFF7FDFB)
-                        ),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF7FDFB)),
                         shape = RoundedCornerShape(16.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
@@ -140,57 +137,38 @@ fun ConfiguracionPerfil(
                             modifier = Modifier.padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Box(modifier = Modifier.size(90.dp)) {
+                            Box(modifier = Modifier.size(80.dp)) {
                                 Image(
                                     painter = painterResource(id = R.drawable.ic_usuario),
                                     contentDescription = "Foto de perfil",
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clip(CircleShape)
+                                    modifier = Modifier.fillMaxSize().clip(CircleShape)
                                 )
-
-                                IconButton(
-                                    onClick = { /* Lógica para abrir galería o cámara */ },
-                                    modifier = Modifier
-                                        .size(30.dp)
-                                        .align(Alignment.BottomEnd)
-                                        .background(color = Color.White, shape = CircleShape)
-                                        .border(width = 2.dp, color = VerdePillbot, shape = CircleShape)
-                                ) {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.ic_camera),
-                                        contentDescription = "Cambiar foto",
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                }
                             }
 
                             Spacer(modifier = Modifier.width(16.dp))
 
                             Column {
                                 Text(
-                                    text = nombre,
+                                    text = "$nombre $apellidoPaterno",
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 18.sp,
                                     color = Color.Black
                                 )
-                                Text(
-                                    text = correo,
-                                    color = Color.Gray,
-                                    fontSize = 14.sp
-                                )
+                                Text(text = correo, color = Color.Gray, fontSize = 14.sp)
                             }
                         }
                     }
 
                     Spacer(modifier = Modifier.height(25.dp))
 
+                    // --- SECCIÓN 1: INFORMACIÓN PERSONAL ---
                     TituloSeccion("Información personal")
 
                     CampoSimple(
-                        titulo = "Nombre completo",
+                        titulo = "Nombre(s)",
                         valor = nombre,
-                        onValueChange = { nombre = it }
+                        onValueChange = { nombre = it },
+                        enabled = esEditable
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -200,39 +178,18 @@ fun ConfiguracionPerfil(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         CampoSimple(
-                            titulo = "Correo electrónico",
-                            valor = correo,
-                            onValueChange = { correo = it },
+                            titulo = "Apellido paterno",
+                            valor = apellidoPaterno,
+                            onValueChange = { apellidoPaterno = it },
+                            enabled = esEditable,
                             modifier = Modifier.weight(1f)
                         )
 
                         CampoSimple(
-                            titulo = "Número telefónico",
-                            valor = telefono,
-                            onValueChange = { telefono = it },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(25.dp))
-
-                    TituloSeccion("Contactos de emergencia")
-
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        CampoSimple(
-                            titulo = "Contacto 1",
-                            valor = contacto1,
-                            onValueChange = { contacto1 = it },
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        CampoSimple(
-                            titulo = "Teléfono 1",
-                            valor = telefono1,
-                            onValueChange = { telefono1 = it },
+                            titulo = "Apellido materno",
+                            valor = apellidoMaterno,
+                            onValueChange = { apellidoMaterno = it },
+                            enabled = esEditable,
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -244,69 +201,162 @@ fun ConfiguracionPerfil(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         CampoSimple(
-                            titulo = "Contacto 2",
-                            valor = contacto2,
-                            onValueChange = { contacto2 = it },
+                            titulo = "Teléfono",
+                            valor = telefono,
+                            onValueChange = { telefono = it },
+                            enabled = esEditable,
                             modifier = Modifier.weight(1f)
                         )
 
                         CampoSimple(
-                            titulo = "Teléfono 2",
-                            valor = telefono2,
-                            onValueChange = { telefono2 = it },
+                            titulo = "Fecha de nacimiento",
+                            valor = fechaNacimiento,
+                            onValueChange = { fechaNacimiento = it },
+                            enabled = false,
                             modifier = Modifier.weight(1f)
                         )
                     }
 
                     Spacer(modifier = Modifier.height(25.dp))
 
+                    // --- SECCIÓN 2: CONTACTO Y DOMICILIO ---
+                    TituloSeccion("Contacto y Domicilio")
+
+                    CampoSimple(
+                        titulo = "Correo electrónico",
+                        valor = correo,
+                        onValueChange = { correo = it },
+                        enabled = esEditable
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    CampoSimple(
+                        titulo = "Dirección de domicilio",
+                        valor = direccion,
+                        onValueChange = { direccion = it },
+                        enabled = esEditable
+                    )
+
+                    Spacer(modifier = Modifier.height(25.dp))
+
+                    // --- SECCIÓN 3: SEGURIDAD ---
                     TituloSeccion("Seguridad")
 
                     CampoPassword(
-                        titulo = "Ingresa tu contraseña actual",
-                        valor = passwordActual,
-                        onValueChange = { passwordActual = it }
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    CampoPassword(
-                        titulo = "Ingresa tu contraseña nueva",
+                        titulo = "Nueva contraseña (opcional)",
                         valor = passwordNueva,
-                        onValueChange = { passwordNueva = it }
+                        onValueChange = { passwordNueva = it },
+                        enabled = esEditable
                     )
 
-                    Spacer(modifier = Modifier.height(35.dp))
+                    Spacer(modifier = Modifier.height(30.dp))
 
-                    Button(
-                        onClick = {
-                            /* Ejecutar update a la base de datos pasándole nombre, correo, telefono, etc. */
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth(0.8f)
-                            .height(48.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = VerdePillbot),
-                        shape = RoundedCornerShape(12.dp)
+                    // --- TRES BOTONES EN FILA ---
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("GUARDAR CAMBIOS", fontWeight = FontWeight.Bold, color = Color.White)
+                        BotonAccionPerfil(
+                            titulo = if (esEditable) "CANCELAR" else "EDITAR",
+                            icono = Icons.Default.Edit,
+                            colorFondo = if (esEditable) Color.LightGray else AzulPillbot,
+                            colorTexto = if (esEditable) Color.DarkGray else Color.White,
+                            onClick = { esEditable = !esEditable },
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        BotonAccionPerfil(
+                            titulo = "GUARDAR",
+                            icono = Icons.Default.Check,
+                            colorFondo = if (esEditable) VerdePillbot else Color(0xFFA5D6A7),
+                            colorTexto = Color.White,
+                            onClick = {
+                                if (esEditable) {
+                                    viewModel.actualizarPerfilDirecto(
+                                        usuarioId = usuarioId,
+                                        nombre = nombre,
+                                        apellidoPaterno = apellidoPaterno,
+                                        apellidoMaterno = apellidoMaterno,
+                                        telefono = telefono,
+                                        correo = correo,
+                                        direccion = direccion,
+                                        fechaNacimiento = fechaNacimiento,
+                                        contrasenaNueva = passwordNueva.ifBlank { null }
+                                    ) { exito, mensaje ->
+                                        Toast.makeText(context, mensaje, Toast.LENGTH_SHORT).show()
+                                        if (exito) {
+                                            esEditable = false
+                                            viewModel.obtenerPerfil(usuarioId)
+                                        }
+                                    }
+                                } else {
+                                    Toast.makeText(context, "Presiona EDITAR primero", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        BotonAccionPerfil(
+                            titulo = "SALIR",
+                            icono = Icons.AutoMirrored.Filled.ExitToApp,
+                            colorFondo = RojoCerrarSesion,
+                            colorTexto = Color.White,
+                            onClick = onCerrarSesion,
+                            modifier = Modifier.weight(1f)
+                        )
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Button(
-                        onClick = onCerrarSesion,
-                        modifier = Modifier
-                            .fillMaxWidth(0.8f)
-                            .height(48.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF356799)),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text("CERRAR SESIÓN", fontWeight = FontWeight.Bold, color = Color.White)
-                    }
-
-                    Spacer(modifier = Modifier.height(100.dp))
+                    Spacer(modifier = Modifier.height(80.dp))
                 }
             }
+        }
+    }
+}
+
+// Componente individual para los botones de acción estilizados
+@Composable
+fun BotonAccionPerfil(
+    titulo: String,
+    icono: ImageVector,
+    colorFondo: Color,
+    colorTexto: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .height(72.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = colorFondo),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(6.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = icono,
+                contentDescription = titulo,
+                tint = colorTexto,
+                modifier = Modifier.size(22.dp)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = titulo,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = colorTexto,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
@@ -329,6 +379,7 @@ fun CampoSimple(
     titulo: String,
     valor: String,
     onValueChange: (String) -> Unit,
+    enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     Column(modifier) {
@@ -342,13 +393,17 @@ fun CampoSimple(
         OutlinedTextField(
             value = valor,
             onValueChange = onValueChange,
+            enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(10.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = VerdePillbot,
                 unfocusedBorderColor = Color(0xFFCCCCCC),
+                disabledBorderColor = Color(0xFFE0E0E0),
+                disabledTextColor = Color.DarkGray,
                 focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White
+                unfocusedContainerColor = Color.White,
+                disabledContainerColor = Color(0xFFF5F5F5)
             )
         )
     }
@@ -358,7 +413,8 @@ fun CampoSimple(
 fun CampoPassword(
     titulo: String,
     valor: String,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
+    enabled: Boolean = true
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -371,14 +427,18 @@ fun CampoPassword(
         OutlinedTextField(
             value = valor,
             onValueChange = onValueChange,
+            enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
             shape = RoundedCornerShape(10.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = VerdePillbot,
                 unfocusedBorderColor = Color(0xFFCCCCCC),
+                disabledBorderColor = Color(0xFFE0E0E0),
+                disabledTextColor = Color.DarkGray,
                 focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White
+                unfocusedContainerColor = Color.White,
+                disabledContainerColor = Color(0xFFF5F5F5)
             )
         )
     }

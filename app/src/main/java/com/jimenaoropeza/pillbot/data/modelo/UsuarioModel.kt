@@ -3,9 +3,12 @@ package com.jimenaoropeza.pillbot.data.modelo
 import com.google.gson.annotations.SerializedName
 
 data class UsuarioResponse(
-    @SerializedName("success") val success: Boolean,
-    @SerializedName("message") val message: String?,
-    @SerializedName("data") val data: UsuarioDto?
+    @SerializedName("success")
+    val success: Boolean,
+    @SerializedName("message")
+    val message: String?,
+    @SerializedName("data")
+    val data: UsuarioDto?
 )
 
 data class UsuarioDto(
@@ -21,6 +24,7 @@ data class PersonaDto(
     @SerializedName("nombre") val nombre: String,
     @SerializedName("apellidoPaterno") val apellidoPaterno: String,
     @SerializedName("apellidoMaterno") val apellidoMaterno: String?,
+    @SerializedName("fechaNacimiento") val fechaNacimiento: String?,
     @SerializedName("telefono") val telefono: String?,
     @SerializedName("correo") val correo: String,
     @SerializedName("direccion") val direccion: String?

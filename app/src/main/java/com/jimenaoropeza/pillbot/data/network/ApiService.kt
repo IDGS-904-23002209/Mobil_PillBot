@@ -1,5 +1,6 @@
 package com.jimenaoropeza.pillbot.network
 
+import com.jimenaoropeza.pillbot.data.modelo.ActualizarClienteRequest
 import com.jimenaoropeza.pillbot.data.modelo.CompartimentoRequest
 import com.jimenaoropeza.pillbot.data.modelo.DetalleRecetaCompletoRequest
 import com.jimenaoropeza.pillbot.data.modelo.DetalleRecetaRequest
@@ -149,5 +150,10 @@ interface ApiService {
     @GET("api/admin/usuarios/usuarioBuscar/{id}")
     suspend fun buscarUsuarioPorId(
         @Path("id") id: Int
+    ): Response<UsuarioResponse>
+
+    @PUT("api/clientes/actualizar")
+    suspend fun actualizarCliente(
+        @Body request: ActualizarClienteRequest
     ): Response<UsuarioResponse>
 }
