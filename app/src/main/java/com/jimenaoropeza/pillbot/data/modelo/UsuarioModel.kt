@@ -16,7 +16,16 @@ data class UsuarioDto(
     @SerializedName("idPersona") val idPersona: Int,
     @SerializedName("idRol") val idRol: Int,
     @SerializedName("persona") val persona: PersonaDto?,
-    @SerializedName("rol") val rol: RolDto?
+    @SerializedName("rol") val rol: RolDto?,
+    val cliente: ClienteDto? = null
+)
+
+data class ClienteDto(
+    val idCliente: Int? = null,
+    val tipoSangre: String? = null,
+    val alergias: String? = null,
+    val contactoEmergencia: String? = null,
+    val telefonoEmergencia: String? = null
 )
 
 data class PersonaDto(
@@ -34,4 +43,20 @@ data class RolDto(
     @SerializedName("idRol") val idRol: Int,
     @SerializedName("nombreRol") val nombreRol: String,
     @SerializedName("descripcion") val descripcion: String?
+)
+
+data class ClienteConsultaDto(
+    @SerializedName("idCliente") val idCliente: Int?,
+    @SerializedName("usuarioId") val usuarioId: Int?,
+    @SerializedName("nombre") val nombre: String?,
+    @SerializedName("apellidoPaterno") val apellidoPaterno: String?,
+    @SerializedName("apellidoMaterno") val apellidoMaterno: String?,
+    @SerializedName("correo") val correo: String?,
+    @SerializedName("telefono") val telefono: String?,
+    @SerializedName("direccion") val direccion: String?,
+    @SerializedName("fechaNacimiento") val fechaNacimiento: String?,
+    @SerializedName("tipoSangre") val tipoSangre: String?,
+    @SerializedName("alergias") val alergias: String?,
+    @SerializedName("contactoEmergencia") val contactoEmergencia: String?,
+    @SerializedName("telefonoEmergencia") val telefonoEmergencia: String?
 )

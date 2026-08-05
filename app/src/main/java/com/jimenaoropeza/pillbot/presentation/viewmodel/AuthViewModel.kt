@@ -15,6 +15,7 @@ class AuthViewModel : ViewModel() {
 
     private val repository = AuthRepository()
 
+    // Campos básicos
     var nombre by mutableStateOf("")
     var apellidoPaterno by mutableStateOf("")
     var apellidoMaterno by mutableStateOf("")
@@ -25,6 +26,13 @@ class AuthViewModel : ViewModel() {
     var direccion by mutableStateOf("")
     var idRol by mutableStateOf(3)
 
+    // --- NUEVAS VARIABLES DE ESTADO PARA EL CLIENTE ---
+    var tipoSangre by mutableStateOf("")
+    var alergias by mutableStateOf("")
+    var contactoEmergencia by mutableStateOf("")
+    var telefonoEmergencia by mutableStateOf("")
+
+    // Respuestas y UI State
     var usuarioNombre by mutableStateOf("Usuario")
         private set
 
@@ -86,19 +94,21 @@ class AuthViewModel : ViewModel() {
 
         viewModelScope.launch {
             try {
-                // Formateamos la fecha a ISO (AAAA-MM-DDTHH:mm:ss.sssZ) para .NET
-                val fechaFormatted = if (fechaNacimiento.contains("T")) fechaNacimiento else "${fechaNacimiento}T00:00:00.000Z"
-
                 val request = RegisterRequest(
                     nombre = nombre.trim(),
                     apellidoPaterno = apellidoPaterno.trim(),
                     apellidoMaterno = apellidoMaterno.trim().ifBlank { null },
-                    fechaNacimiento = fechaFormatted,
+                    fechaNacimiento = fechaNacimiento.trim(), // Envía "YYYY-MM-DD"
                     correo = correo.trim(),
                     contrasena = contrasena.trim(),
                     telefono = telefono.trim().ifBlank { null },
                     direccion = direccion.trim(),
-                    idRol = idRol
+                    idRol = idRol,
+                    // Pasan los valores del ViewModel directamente
+                    tipoSangre = tipoSangre.trim().ifBlank { null },
+                    alergias = alergias.trim().ifBlank { null },
+                    contactoEmergencia = contactoEmergencia.trim().ifBlank { null },
+                    telefonoEmergencia = telefonoEmergencia.trim().ifBlank { null }
                 )
 
                 val response = repository.registrar(request)
@@ -107,10 +117,8 @@ class AuthViewModel : ViewModel() {
                     onSuccess()
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    android.util.Log.e("API_ERROR", "Código: ${response.code()} | Detalle: $errorBody")
-
                     errorMessage = when (response.code()) {
-                        400 -> "Datos de registro inválidos. Revisa la información enviada."
+                        400 -> "Datos de registro inválidos."
                         409 -> "El correo electrónico ya está registrado."
                         else -> "Error en el servidor (${response.code()})"
                     }

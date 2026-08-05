@@ -1,9 +1,9 @@
 package com.jimenaoropeza.pillbot.pantallas
 
+import android.app.DatePickerDialog
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -28,10 +29,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
 import com.jimenaoropeza.pillbot.R
-import com.jimenaoropeza.pillbot.presentation.viewmodel.PerfilViewModel
 import com.jimenaoropeza.pillbot.presentation.viewmodel.PerfilState
+import com.jimenaoropeza.pillbot.presentation.viewmodel.PerfilViewModel
+import java.util.Calendar
 
 val AzulPillbot = Color(0xFF2298D4)
 val VerdePillbot = Color(0xFF59CBA2)
@@ -47,18 +48,51 @@ fun ConfiguracionPerfil(
     val perfilState by viewModel.state.collectAsState()
 
     var esEditable by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
-    // Estados independientes para nombres y apellidos
+    // Estados de Persona
     var nombre by remember { mutableStateOf("") }
     var apellidoPaterno by remember { mutableStateOf("") }
     var apellidoMaterno by remember { mutableStateOf("") }
-
     var correo by remember { mutableStateOf("") }
     var telefono by remember { mutableStateOf("") }
     var fechaNacimiento by remember { mutableStateOf("") }
     var direccion by remember { mutableStateOf("") }
 
+    // Estados de Cliente (Información Médica)
+    var tipoSangre by remember { mutableStateOf("") }
+    var alergias by remember { mutableStateOf("") }
+    var contactoEmergencia by remember { mutableStateOf("") }
+    var telefonoEmergencia by remember { mutableStateOf("") }
+
+    // Estados de Seguridad (Contraseñas)
     var passwordNueva by remember { mutableStateOf("") }
+    var passwordConfirmar by remember { mutableStateOf("") }
+
+    // Validación de coincidencia de contraseña
+    val passwordsNoCoinciden = passwordNueva.isNotBlank() &&
+            passwordConfirmar.isNotBlank() &&
+            passwordNueva != passwordConfirmar
+
+    // Diálogo de Calendario
+    if (showDatePicker && esEditable) {
+        val calendar = Calendar.getInstance()
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                val mesFormateado = String.format("%02d", month + 1)
+                val diaFormateado = String.format("%02d", dayOfMonth)
+                fechaNacimiento = "$year-$mesFormateado-$diaFormateado"
+                showDatePicker = false
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).apply {
+            setOnDismissListener { showDatePicker = false }
+            show()
+        }
+    }
 
     LaunchedEffect(usuarioId) {
         viewModel.obtenerPerfil(usuarioId)
@@ -66,17 +100,24 @@ fun ConfiguracionPerfil(
 
     LaunchedEffect(perfilState) {
         if (perfilState is PerfilState.Success) {
-            val persona = (perfilState as PerfilState.Success).usuario.persona
-            if (persona != null) {
-                nombre = persona.nombre ?: ""
-                apellidoPaterno = persona.apellidoPaterno ?: ""
-                apellidoMaterno = persona.apellidoMaterno ?: ""
+            val cliente = (perfilState as PerfilState.Success).cliente
 
-                correo = persona.correo ?: ""
-                telefono = persona.telefono ?: ""
-                direccion = persona.direccion ?: ""
-                fechaNacimiento = persona.fechaNacimiento?.split("T")?.get(0) ?: ""
-            }
+            nombre = cliente.nombre ?: ""
+            apellidoPaterno = cliente.apellidoPaterno ?: ""
+            apellidoMaterno = cliente.apellidoMaterno ?: ""
+            correo = cliente.correo ?: ""
+            telefono = cliente.telefono ?: ""
+            direccion = cliente.direccion ?: ""
+            fechaNacimiento = cliente.fechaNacimiento?.split("T")?.get(0) ?: ""
+
+            tipoSangre = cliente.tipoSangre ?: ""
+            alergias = cliente.alergias ?: ""
+            contactoEmergencia = cliente.contactoEmergencia ?: ""
+            telefonoEmergencia = cliente.telefonoEmergencia ?: ""
+
+            // Limpiar campos de contraseña al cargar/reorganizar
+            passwordNueva = ""
+            passwordConfirmar = ""
         }
     }
 
@@ -112,7 +153,6 @@ fun ConfiguracionPerfil(
                         .padding(horizontal = 20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
@@ -149,7 +189,7 @@ fun ConfiguracionPerfil(
 
                             Column {
                                 Text(
-                                    text = "$nombre $apellidoPaterno",
+                                    text = "$nombre $apellidoPaterno".trim(),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 18.sp,
                                     color = Color.Black
@@ -208,18 +248,95 @@ fun ConfiguracionPerfil(
                             modifier = Modifier.weight(1f)
                         )
 
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Fecha de nacimiento",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color.DarkGray
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            OutlinedTextField(
+                                value = fechaNacimiento,
+                                onValueChange = {},
+                                readOnly = true,
+                                enabled = esEditable,
+                                trailingIcon = {
+                                    if (esEditable) {
+                                        IconButton(onClick = { showDatePicker = true }) {
+                                            Icon(Icons.Default.DateRange, contentDescription = "Cambiar fecha", tint = VerdePillbot)
+                                        }
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(enabled = esEditable) { showDatePicker = true },
+                                shape = RoundedCornerShape(10.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = VerdePillbot,
+                                    unfocusedBorderColor = Color(0xFFCCCCCC),
+                                    disabledBorderColor = Color(0xFFE0E0E0),
+                                    disabledTextColor = Color.DarkGray,
+                                    focusedContainerColor = Color.White,
+                                    unfocusedContainerColor = Color.White,
+                                    disabledContainerColor = Color(0xFFF5F5F5)
+                                )
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(25.dp))
+
+                    // --- SECCIÓN 2: INFORMACIÓN MÉDICA ---
+                    TituloSeccion("Información médica")
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         CampoSimple(
-                            titulo = "Fecha de nacimiento",
-                            valor = fechaNacimiento,
-                            onValueChange = { fechaNacimiento = it },
-                            enabled = false,
+                            titulo = "Tipo de sangre",
+                            valor = tipoSangre,
+                            onValueChange = { tipoSangre = it },
+                            enabled = esEditable,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        CampoSimple(
+                            titulo = "Alergias",
+                            valor = alergias,
+                            onValueChange = { alergias = it },
+                            enabled = esEditable,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        CampoSimple(
+                            titulo = "Contacto emergencia",
+                            valor = contactoEmergencia,
+                            onValueChange = { contactoEmergencia = it },
+                            enabled = esEditable,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        CampoSimple(
+                            titulo = "Tel. Emergencia",
+                            valor = telefonoEmergencia,
+                            onValueChange = { telefonoEmergencia = it },
+                            enabled = esEditable,
                             modifier = Modifier.weight(1f)
                         )
                     }
 
                     Spacer(modifier = Modifier.height(25.dp))
 
-                    // --- SECCIÓN 2: CONTACTO Y DOMICILIO ---
+                    // --- SECCIÓN 3: CONTACTO Y DOMICILIO ---
                     TituloSeccion("Contacto y Domicilio")
 
                     CampoSimple(
@@ -240,19 +357,41 @@ fun ConfiguracionPerfil(
 
                     Spacer(modifier = Modifier.height(25.dp))
 
-                    // --- SECCIÓN 3: SEGURIDAD ---
+                    // --- SECCIÓN 4: SEGURIDAD ---
                     TituloSeccion("Seguridad")
 
                     CampoPassword(
                         titulo = "Nueva contraseña (opcional)",
                         valor = passwordNueva,
                         onValueChange = { passwordNueva = it },
-                        enabled = esEditable
+                        enabled = esEditable,
+                        isError = passwordsNoCoinciden
                     )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    CampoPassword(
+                        titulo = "Confirmar nueva contraseña",
+                        valor = passwordConfirmar,
+                        onValueChange = { passwordConfirmar = it },
+                        enabled = esEditable,
+                        isError = passwordsNoCoinciden
+                    )
+
+                    if (passwordsNoCoinciden) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Las contraseñas no coinciden",
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 12.sp,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Start
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(30.dp))
 
-                    // --- TRES BOTONES EN FILA ---
+                    // --- BOTONES DE ACCIÓN ---
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -262,7 +401,13 @@ fun ConfiguracionPerfil(
                             icono = Icons.Default.Edit,
                             colorFondo = if (esEditable) Color.LightGray else AzulPillbot,
                             colorTexto = if (esEditable) Color.DarkGray else Color.White,
-                            onClick = { esEditable = !esEditable },
+                            onClick = {
+                                if (esEditable) {
+                                    passwordNueva = ""
+                                    passwordConfirmar = ""
+                                }
+                                esEditable = !esEditable
+                            },
                             modifier = Modifier.weight(1f)
                         )
 
@@ -274,26 +419,36 @@ fun ConfiguracionPerfil(
                             colorFondo = if (esEditable) VerdePillbot else Color(0xFFA5D6A7),
                             colorTexto = Color.White,
                             onClick = {
-                                if (esEditable) {
-                                    viewModel.actualizarPerfilDirecto(
-                                        usuarioId = usuarioId,
-                                        nombre = nombre,
-                                        apellidoPaterno = apellidoPaterno,
-                                        apellidoMaterno = apellidoMaterno,
-                                        telefono = telefono,
-                                        correo = correo,
-                                        direccion = direccion,
-                                        fechaNacimiento = fechaNacimiento,
-                                        contrasenaNueva = passwordNueva.ifBlank { null }
-                                    ) { exito, mensaje ->
-                                        Toast.makeText(context, mensaje, Toast.LENGTH_SHORT).show()
-                                        if (exito) {
-                                            esEditable = false
-                                            viewModel.obtenerPerfil(usuarioId)
-                                        }
-                                    }
-                                } else {
+                                if (!esEditable) {
                                     Toast.makeText(context, "Presiona EDITAR primero", Toast.LENGTH_SHORT).show()
+                                    return@BotonAccionPerfil
+                                }
+
+                                if (passwordsNoCoinciden) {
+                                    Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
+                                    return@BotonAccionPerfil
+                                }
+
+                                viewModel.actualizarPerfilDirecto(
+                                    usuarioId = usuarioId,
+                                    nombre = nombre,
+                                    apellidoPaterno = apellidoPaterno,
+                                    apellidoMaterno = apellidoMaterno,
+                                    telefono = telefono,
+                                    correo = correo,
+                                    direccion = direccion,
+                                    fechaNacimiento = fechaNacimiento,
+                                    tipoSangre = tipoSangre,
+                                    alergias = alergias,
+                                    contactoEmergencia = contactoEmergencia,
+                                    telefonoEmergencia = telefonoEmergencia,
+                                    contrasenaNueva = passwordNueva.ifBlank { null }
+                                ) { exito, mensaje ->
+                                    Toast.makeText(context, mensaje, Toast.LENGTH_SHORT).show()
+                                    if (exito) {
+                                        esEditable = false
+                                        viewModel.obtenerPerfil(usuarioId)
+                                    }
                                 }
                             },
                             modifier = Modifier.weight(1f)
@@ -318,7 +473,6 @@ fun ConfiguracionPerfil(
     }
 }
 
-// Componente individual para los botones de acción estilizados
 @Composable
 fun BotonAccionPerfil(
     titulo: String,
@@ -414,7 +568,8 @@ fun CampoPassword(
     titulo: String,
     valor: String,
     onValueChange: (String) -> Unit,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    isError: Boolean = false
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -428,6 +583,7 @@ fun CampoPassword(
             value = valor,
             onValueChange = onValueChange,
             enabled = enabled,
+            isError = isError,
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
             shape = RoundedCornerShape(10.dp),

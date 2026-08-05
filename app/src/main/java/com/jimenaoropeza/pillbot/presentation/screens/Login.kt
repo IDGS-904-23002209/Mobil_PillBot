@@ -43,6 +43,9 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.ui.platform.LocalContext
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.material.icons.filled.*
+import java.util.Calendar
+import android.widget.Toast
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -261,6 +264,27 @@ fun Registrarse(
 
     var passwordVisible by remember { mutableStateOf(false) }
     var errorValidacion by remember { mutableStateOf<String?>(null) }
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    // --- DIÁLOGO DEL CALENDARIO ---
+    if (showDatePicker) {
+        val calendar = Calendar.getInstance()
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                val mesFormateado = String.format("%02d", month + 1)
+                val diaFormateado = String.format("%02d", dayOfMonth)
+                viewModel.fechaNacimiento = "$year-$mesFormateado-$diaFormateado"
+                showDatePicker = false
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).apply {
+            setOnDismissListener { showDatePicker = false }
+            show()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -359,14 +383,37 @@ fun Registrarse(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 4. Fecha de Nacimiento
-            CampoTexto(
-                label = "Fecha de Nacimiento * (AAAA-MM-DD)",
-                value = viewModel.fechaNacimiento,
-                onValueChange = { viewModel.fechaNacimiento = it },
-                placeholder = "2004-10-28",
-                icon = Icons.Default.DateRange
-            )
+            // 4. Fecha de Nacimiento con Calendario
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Fecha de Nacimiento *",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.Black,
+                    modifier = Modifier.padding(bottom = 4.dp, start = 4.dp)
+                )
+                OutlinedTextField(
+                    value = viewModel.fechaNacimiento,
+                    onValueChange = {},
+                    readOnly = true,
+                    placeholder = { Text("AAAA-MM-DD", color = GrayLight) },
+                    leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = GrayLight) },
+                    trailingIcon = {
+                        IconButton(onClick = { showDatePicker = true }) {
+                            Icon(Icons.Default.DateRange, contentDescription = "Abrir Calendario", tint = Color(0xFF59CBA2))
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showDatePicker = true },
+                    shape = RoundedCornerShape(14.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedBorderColor = Color(0xFF59CBA2),
+                        unfocusedBorderColor = Color(0xFF59CBA2)
+                    )
+                )
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -403,7 +450,63 @@ fun Registrarse(
                 keyboardType = KeyboardType.Email
             )
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- SECCIÓN: INFORMACIÓN MÉDICA (CLIENTE) ---
+            Text(
+                text = "Información Médica (Opcional)",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF59CBA2),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+            )
+
+            // Tipo de Sangre
+            CampoTexto(
+                label = "Tipo de Sangre",
+                value = viewModel.tipoSangre,
+                onValueChange = { viewModel.tipoSangre = it },
+                placeholder = "O+, A-, B+, etc.",
+                icon = Icons.Default.Favorite
+            )
+
             Spacer(modifier = Modifier.height(12.dp))
+
+            // Alergias
+            CampoTexto(
+                label = "Alergias",
+                value = viewModel.alergias,
+                onValueChange = { viewModel.alergias = it },
+                placeholder = "Penicilina, Polvo, etc.",
+                icon = Icons.Default.Warning
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Contacto de Emergencia
+            CampoTexto(
+                label = "Contacto de Emergencia",
+                value = viewModel.contactoEmergencia,
+                onValueChange = { viewModel.contactoEmergencia = it },
+                placeholder = "Nombre del familiar o contacto",
+                icon = Icons.Default.Person
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Teléfono de Emergencia
+            CampoTexto(
+                label = "Teléfono de Emergencia",
+                value = viewModel.telefonoEmergencia,
+                onValueChange = { viewModel.telefonoEmergencia = it },
+                placeholder = "4771234567",
+                icon = Icons.Default.Call,
+                keyboardType = KeyboardType.Phone
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // 8. Tipo de Cuenta
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -510,7 +613,7 @@ fun Registrarse(
                     when {
                         viewModel.nombre.trim().isEmpty() -> errorValidacion = "Por favor ingresa tu nombre."
                         viewModel.apellidoPaterno.trim().isEmpty() -> errorValidacion = "Por favor ingresa tu apellido paterno."
-                        viewModel.fechaNacimiento.trim().isEmpty() -> errorValidacion = "Por favor ingresa tu fecha de nacimiento."
+                        viewModel.fechaNacimiento.trim().isEmpty() -> errorValidacion = "Por favor selecciona tu fecha de nacimiento."
                         viewModel.direccion.trim().isEmpty() -> errorValidacion = "Por favor ingresa tu dirección."
                         viewModel.correo.trim().isEmpty() -> errorValidacion = "Por favor ingresa tu correo."
                         !android.util.Patterns.EMAIL_ADDRESS.matcher(viewModel.correo.trim()).matches() -> errorValidacion = "El correo no tiene un formato válido."
@@ -518,6 +621,14 @@ fun Registrarse(
                         viewModel.contrasena.length < 6 -> errorValidacion = "La contraseña debe tener al menos 6 caracteres."
                         else -> {
                             viewModel.registrarUsuario {
+                                // MUESTRA EL MENSAJE DE ÉXITO
+                                Toast.makeText(
+                                    context,
+                                    "¡Registro realizado con éxito! Ya puedes iniciar sesión.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+
+                                // NAVEGA AL LOGIN
                                 onRegisterSuccessClick()
                             }
                         }
@@ -596,7 +707,6 @@ fun CampoTexto(
         )
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResetPassword(

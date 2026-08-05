@@ -28,5 +28,18 @@ data class RegisterRequest(
     val direccion: String,
 
     @SerializedName("idRol")
-    val idRol: Int = 3
+    val idRol: Int = 3,
+
+    // Registro de cliente
+    @SerializedName("tipoSangre")
+    val tipoSangre: String? = null,
+
+    @SerializedName("alergias")
+    val alergias: String? = null,
+
+    @SerializedName("contactoEmergencia")
+    val contactoEmergencia: String? = null,
+
+    @SerializedName("telefonoEmergencia")
+    val telefonoEmergencia: String? = null
 )
